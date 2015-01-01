@@ -60,7 +60,7 @@ var svg = d3.select("body").append("svg")
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-d3.json("../../dataset/generated/link_xhamster.json", function(link_xhamster) {
+d3.json("../../dataset/generated/xhamster/link_xhamster.json", function(link_xhamster) {
   var matrix = [],
       nodes = link_xhamster.nodes,
       n = nodes.length;

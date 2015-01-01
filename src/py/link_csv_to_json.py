@@ -1,6 +1,6 @@
+__author__ = 'martin'
 """
 Convert a csv matrix file to json file
-@author: MP
 """
 
 import pandas as pd
@@ -9,7 +9,7 @@ import io
 
 # read csv
 link_csv_path = "../../dataset/original/xhamster/link_xhamster.csv"
-link_json_path = "../../dataset/generated/link_xhamster.json"
+link_json_path = "../../dataset/generated/xhamster/link_xhamster.json"
 data = pd.read_csv(link_csv_path, sep=",",encoding="utf-8", index_col=0)
 
 # clean data
