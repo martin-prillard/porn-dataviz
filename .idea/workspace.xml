@@ -1,31 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="7a838946-e436-4f68-aed7-7762797a7120" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/dataset/generated/link_xhamster.json" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/README.md" afterPath="$PROJECT_DIR$/README.md" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/dataset/original/youporn/video-comments-and-usernames-clean.000.tab" afterPath="$PROJECT_DIR$/dataset/original/youporn/video-comments-and-usernames-clean.000.tab" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/dataset/original/youporn/video-comments-and-usernames-clean.001.tab" afterPath="$PROJECT_DIR$/dataset/original/youporn/video-comments-and-usernames-clean.001.tab" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/dataset/original/youporn/video-tags-clean.tab" afterPath="$PROJECT_DIR$/dataset/original/youporn/video-tags-clean.tab" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/dataset/original/youporn/video-usernames-clean.tab" afterPath="$PROJECT_DIR$/dataset/original/youporn/video-usernames-clean.tab" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/js/d3.v3.min.js" afterPath="$PROJECT_DIR$/src/js/d3.v3.min.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/py/link_csv_to_json.py" afterPath="$PROJECT_DIR$/src/py/link_csv_to_json.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/dataset/original/xhamster/link_xhamster.csv" afterPath="$PROJECT_DIR$/dataset/original/xhamster/link_xhamster.csv" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/dataset/original/xnxx/link_xnxx.csv" afterPath="$PROJECT_DIR$/dataset/original/xnxx/link_xnxx.csv" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/html/links_xhamster.html" afterPath="$PROJECT_DIR$/src/html/links_xhamster.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/dataset/original/xnxx/ranking_novelty_XNXX.csv" afterPath="$PROJECT_DIR$/dataset/original/xnxx/ranking_novelty_XNXX.csv" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/dataset/original/xnxx/ranking_occurence_XNXX.csv" afterPath="$PROJECT_DIR$/dataset/original/xnxx/ranking_occurence_XNXX.csv" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/dataset/original/xnxx/ranking_user_reaction_XNXX.csv" afterPath="$PROJECT_DIR$/dataset/original/xnxx/ranking_user_reaction_XNXX.csv" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/dataset/original/xhamster/rankings_xhamster.csv" afterPath="$PROJECT_DIR$/dataset/original/xhamster/rankings_xhamster.csv" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/css/style.css" afterPath="$PROJECT_DIR$/src/css/style.css" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/dataset/original/youporn/video-ids.tab" afterPath="$PROJECT_DIR$/dataset/original/youporn/video-ids.tab" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/dataset/original/youporn/video-title-views-ratings-clean.tab" afterPath="$PROJECT_DIR$/dataset/original/youporn/video-title-views-ratings-clean.tab" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/dataset/original/xhamster/xhamster.000.csv" afterPath="$PROJECT_DIR$/dataset/original/xhamster/xhamster.000.csv" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/dataset/original/xhamster/xhamster.001.csv" afterPath="$PROJECT_DIR$/dataset/original/xhamster/xhamster.001.csv" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/dataset/original/xnxx/xnxx.000.csv" afterPath="$PROJECT_DIR$/dataset/original/xnxx/xnxx.000.csv" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/dataset/original/xnxx/xnxx.001.csv" afterPath="$PROJECT_DIR$/dataset/original/xnxx/xnxx.001.csv" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/dataset/original/xnxx/xnxx.002.csv" afterPath="$PROJECT_DIR$/dataset/original/xnxx/xnxx.002.csv" />
-    </list>
+    <list default="true" id="7a838946-e436-4f68-aed7-7762797a7120" name="Default" comment="" />
     <ignored path="porn-dataviz.iws" />
     <ignored path=".idea/workspace.xml" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -54,8 +30,8 @@
       <file leaf-file-name="link_csv_to_json.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/py/link_csv_to_json.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.29745042" vertical-offset="0" max-vertical-offset="855">
-              <caret line="7" column="9" selection-start-line="7" selection-start-column="9" selection-end-line="7" selection-end-column="9" />
+            <state vertical-scroll-proportion="0.33994335" vertical-offset="0" max-vertical-offset="855">
+              <caret line="8" column="0" selection-start-line="8" selection-start-column="0" selection-end-line="8" selection-end-column="0" />
               <folding>
                 <element signature="e#70#89#0" expanded="true" />
               </folding>
@@ -647,8 +623,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/py/link_csv_to_json.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.29745042" vertical-offset="0" max-vertical-offset="855">
-          <caret line="7" column="9" selection-start-line="7" selection-start-column="9" selection-end-line="7" selection-end-column="9" />
+        <state vertical-scroll-proportion="0.33994335" vertical-offset="0" max-vertical-offset="855">
+          <caret line="8" column="0" selection-start-line="8" selection-start-column="0" selection-end-line="8" selection-end-column="0" />
           <folding>
             <element signature="e#70#89#0" expanded="true" />
           </folding>
