@@ -23,13 +23,15 @@ not_words_stops.update(set(stopwords.words('danish')))
 # read csv
 comments_tab0_path = "../../dataset/generated/youporn/video-comments-and-usernames-clean.000.csv"
 comments_tab1_path = "../../dataset/generated/youporn/video-comments-and-usernames-clean.001.csv"
-comments_dict_path = "../../dataset/generated/youporn/video-comments_wordcount.txt"
+# generated file
+comments_wordcount_txt_path = "../../dataset/generated/youporn/video-comments_wordcount.txt"
+
 
 data0 = pd.read_csv(comments_tab0_path, sep="|")
-data1 = pd.read_csv(comments_tab1_path, sep="|")
+#data1 = pd.read_csv(comments_tab1_path, sep="|")
 # clean data
 data0 = pd.DataFrame(data0.fillna(0))
-data1 = pd.DataFrame(data1.fillna(0))
+#data1 = pd.DataFrame(data1.fillna(0))
 
 # get comments
 comments = []
@@ -55,9 +57,8 @@ def add_comment(comments, data):
     return comments
 
 comments = add_comment(comments, data0)
-comments = add_comment(comments, data1)
-
+#comments = add_comment(comments, data1)
 
 dictionary = corpora.Dictionary(comments)
-# display wordcount sort by word frequency
-dictionary.save_as_text(comments_dict_path, sort_by_word=False)
+# write wordcount file sorted by word frequency
+dictionary.save_as_text(comments_wordcount_txt_path, sort_by_word=False)
