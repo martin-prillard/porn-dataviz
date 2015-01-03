@@ -13,15 +13,16 @@ comments_wordcount_txt_path = "../../dataset/generated/youporn/video-comments_wo
 comments_wordcount_json_path = "../../dataset/generated/youporn/video-comments_wordcount.json"
 
 # read comments_wordcount_txt_path
-data = pd.read_csv(comments_wordcount_txt_path, sep="\s", engine='python', encoding="utf-8")
+data = pd.read_csv(comments_wordcount_txt_path, sep="\s", engine='python', encoding="utf-8", header=None)
 data = pd.DataFrame(data.fillna(0))
 
 # get the maximum tag frequency
-max_tag_frequency = float(list(data[:0])[2])
+max_tag_frequency = float(data.icol(2)[0])
 # maximum tag size
 max_tag_size = float(150)
 # max tag in json file
 max_tag_json = 35
+
 
 # set the right size according the tag frequency
 def get_tag_size(frequency):
