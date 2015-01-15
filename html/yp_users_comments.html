@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <title>YouPorn user's comments</title>
 <style>
-@import url(../css/style.css?20120427);
+@import url(../stylesheets/style.css?20120427);
 body {
     margin: 0 auto;
     font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", "Roboto Light", "Segoe UI Web Light", "Segoe UI Light", "Segoe UI Web Regular", "Segoe UI", Helvetica, Arial, sans-serif;
@@ -12,11 +12,11 @@ body {
 </style>
 
 <body>
-<script src="../js/d3.v3.min.js"></script>
-<script src="../js/d3.layout.cloud.js"></script>
+<script src="../javascripts/d3.v3.min.js"></script>
+<script src="../javascripts/d3.layout.cloud.js"></script>
 <script>
 
-d3.json("../../dataset/generated/youporn/video-comments_wordcount.json", function(error, json) {
+d3.json("../dataset/generated/youporn/video-comments_wordcount.json", function(error, json) {
   if (error) return console.warn(error);
 
   var fill = d3.scale.category20();

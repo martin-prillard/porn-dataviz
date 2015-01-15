@@ -3,7 +3,7 @@
 <title>Category ranking</title>
 <style>
 
-@import url(../css/style.css?20120427);
+@import url(../stylesheets/style.css?20120427);
 
 .background {
   fill: #eee;
@@ -18,7 +18,7 @@ text.active {
 }
 
 </style>
-<script src="../js/d3.v3.min.js"></script>
+<script src="../javascripts/d3.v3.min.js"></script>
 
 <header>
 </header>
@@ -60,7 +60,7 @@ var svg = d3.select("body").append("svg")
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-d3.json("../../dataset/generated/xhamster/link_xhamster.json", function(link_xhamster) {
+d3.json("../dataset/generated/xhamster/link_xhamster.json", function(link_xhamster) {
   var matrix = [],
       nodes = link_xhamster.nodes,
       n = nodes.length;
