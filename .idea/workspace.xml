@@ -2,40 +2,17 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7a838946-e436-4f68-aed7-7762797a7120" name="Default" comment="">
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\dataset\generated\xhamster\gephi\xhamster_tags_clustering.gephi" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\dataset\generated\xhamster\gephi\xhamster_tags_clustering.pdf" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\dataset\generated\xhamster\link_xhamster.json" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\dataset\generated\youporn\video-comments-and-usernames-clean.000.csv" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\dataset\generated\youporn\video-comments-and-usernames-clean.001.csv" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\dataset\generated\youporn\video-comments_wordcount.json" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\dataset\generated\youporn\video-comments_wordcount.txt" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\dataset\original\xhamster\link_xhamster.csv" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\dataset\original\xhamster\rankings_xhamster.csv" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\dataset\original\xhamster\xhamster.000.csv" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\dataset\original\xhamster\xhamster.001.csv" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\dataset\original\xnxx\link_xnxx.csv" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\dataset\original\xnxx\ranking_novelty_XNXX.csv" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\dataset\original\xnxx\ranking_occurence_XNXX.csv" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\dataset\original\xnxx\ranking_user_reaction_XNXX.csv" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\dataset\original\xnxx\xnxx.000.csv" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\dataset\original\xnxx\xnxx.001.csv" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\dataset\original\xnxx\xnxx.002.csv" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\dataset\original\youporn\video-comments-and-usernames-clean.000.tab" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\dataset\original\youporn\video-comments-and-usernames-clean.001.tab" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\dataset\original\youporn\video-ids.tab" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\dataset\original\youporn\video-tags-clean.tab" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\dataset\original\youporn\video-title-views-ratings-clean.tab" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\dataset\original\youporn\video-usernames-clean.tab" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\src\css\style.css" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\src\html\links_xhamster.html" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\src\html\yp_users_comments.html" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\src\js\d3.layout.cloud.js" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\src\js\d3.v3.min.js" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\src\py\xhamsters_link_csv_2_json.py" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\src\py\yp_comments.py" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\src\py\yp_comments_2_json.py" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\porn-dataviz\src\sh\tab2csv.sh" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/dataset/generated/xhamster/gephi/xhamster_tags_clustering.gephi" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/dataset/generated/xhamster/gephi/xhamster_tags_clustering.pdf" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/js/d3.layout.cloud.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/js/d3.v3.min.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/dataset/generated/xhamster/link_xhamster.json" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/html/links_xhamster.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/dataset/generated/youporn/video-comments-and-usernames-clean.000.csv" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/dataset/generated/youporn/video-comments-and-usernames-clean.001.csv" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/dataset/generated/youporn/video-comments_wordcount.json" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/dataset/generated/youporn/video-comments_wordcount.txt" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/html/yp_users_comments.html" />
     </list>
     <ignored path="porn-dataviz.iws" />
     <ignored path=".idea/workspace.xml" />
