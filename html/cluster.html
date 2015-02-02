@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+   body {
+   margin: 0 auto;
+   background: #272727;
+   color: #ecf0f0;
+   }
+   .rect {
+   background: #272727;
+   color: #ecf0f0;
+   }
+   .node circle {
+   fill: #ccc;
+   }
+</style>
+
+<body>
+  <script src='d3.v2.js'></script>
+  <script>  
+/************************************************************ GLOBAL ************************************************************************/
+      var margin = {
+              top: 0,
+              right: 0,
+              bottom: 0,
+              left: 0
+      };
+      width = 1200 - margin.left - margin.right,
+      height = 900 - margin.top - margin.bottom;
+      var widthCluster = 800
+      var heightCluster = 600
+      var widthViewC = width - widthCluster
+      var heightViewC = heightCluster / 3
+      var widthCommentC = width - widthCluster
+      var heightCommentC = heightCluster / 3
+      var widthDurC = width - widthCluster
+      var heightDurC = heightCluster / 3
+      var widthPopC = widthCluster
+      var heightPopC = height - heightCluster
+      var widthWordC = width - widthCluster
+      var heightWordC = height - heightCluster
+
+      var colorBackground = "#272727"
+      var svg = d3.select("body").append("svg")
+              .attr("width", width + margin.left + margin.right)
+              .attr("height", height + margin.top + margin.bottom)
+              
+/*********************************************************** CLUSTER ************************************************************************/
+      function displayCluster() {
+	      var m = 20,
+		  padding = 30,
+		  radius = d3.scale.sqrt().range([0, 12]),
+		  color = d3.scale.category20().domain(d3.range(m));
+
+	      d3.json("./cluster_xhamster.json", function(json) {
+	  
+		  var clusters = new Array(m);
+	  
+		  var range_scale = d3.scale.ordinal()
+		      .domain(d3.range(46))
+		      .rangePoints([8, 25])
+	  
+		  var nodes = json.nodes.map(function(node) {
+		      var i = node.group,
+		          r = range_scale(node.degree),
+		          d = {
+		              tag: "A",//node.tags, //TODO
+		              cluster: node.group,
+		              radius: r,
+		              color: color(i),
+		              x: Math.cos(i / m * 2 * Math.PI) * 200 + widthCluster / 2 + Math.random(),
+		              y: Math.sin(i / m * 2 * Math.PI) * 200 + heightCluster / 2 + Math.random()
+		          };
+		      clusters[i] = d;
+		      return d;
+		  });
+	  	
+		force = d3.layout.force()
+		      .nodes(nodes)
+		      .size([widthCluster, heightCluster])
+		      .gravity(.02)
+		      .charge(0)
+		      .on("tick", tick)
+		      .start();
+
+		  var svgCluster = svg.append("g")
+		      .attr({
+		          "class": "overlay",
+		          "width": widthCluster,
+		          "height": heightCluster
+		      })
+		      .on("dragstart", function() {
+		          d3.event.sourceEvent.stopPropagation(); // silence other listeners
+		      })
+		      .call(d3.behavior.zoom().scaleExtent([1, 8]).on("zoom", zoom))
+		      .append("g");
+	  
+		  var background = svgCluster.append("rect")
+		      .attr({
+		          "class": "overlay",
+		          "width": widthCluster,
+		          "height": heightCluster
+		      })
+		      .attr("fill", colorBackground)
+		      .on("click", function(d) {
+		          unSelectCluster();
+		      });
+	  
+		  var node = svgCluster.selectAll(".node")
+		      .data(nodes)
+		      .enter().append("g")
+		      .attr("class", "node")
+		      .on("click", function(d) {
+		          onMouseClick(d);
+		      })
+		      .call(force.drag);
+	  
+		  node.append("circle")
+		      .attr("r", function(d) {
+		          return d.radius;
+		      })
+		      .style("stroke", "black")
+		      .style("stroke-width", 0.3)
+		      .style("stroke-opacity", 0.5)
+		      .style("fill", function(d) {
+		          return color(d.cluster);
+		      });
+	  
+		  node.append("text")
+		      .attr("text-anchor", "middle")
+		      .attr("font-family", "Comic Sans MS")
+		      .attr("font-size", "9px")
+		      .attr("fill", "black")
+		      .text(function(d) {
+		          return d.tag;
+		      })
+		      .style("font-size", function(d) {
+		          return Math.min(2 * d.radius, (2 * d.radius - 8) / this.getComputedTextLength() * 10) + "px";
+		      })
+		      .attr("dy", ".35em");
+	  
+		  function tick(e) {
+		      node.each(cluster(10 * e.alpha * e.alpha))
+		          .each(collide(.5))
+		          .attr("transform", function(d) {
+		              return "translate(" + d.x + "," + d.y + ")";
+		          });
+		  }
+	  
+		  function cluster(alpha) {
+		      return function(d) {
+		          var cluster = clusters[d.cluster];
+		          if (cluster === d) return;
+		          var x = d.x - cluster.x,
+		              y = d.y - cluster.y,
+		              l = Math.sqrt(x * x + y * y),
+		              r = d.radius + cluster.radius;
+		          if (l != r) {
+		              l = (l - r) / l * alpha;
+		              d.x -= x *= l;
+		              d.y -= y *= l;
+		              cluster.x += x;
+		              cluster.y += y;
+		          }
+		      };
+		  }
+	  
+		  // Resolves collisions between d and all other circles.
+		  function collide(alpha) {
+		      var quadtree = d3.geom.quadtree(nodes);
+		      return function(d) {
+		          var r = d.radius + radius.domain()[1] + padding,
+		              nx1 = d.x - r,
+		              nx2 = d.x + r,
+		              ny1 = d.y - r,
+		              ny2 = d.y + r;
+		          quadtree.visit(function(quad, x1, y1, x2, y2) {
+		              if (quad.point && (quad.point !== d)) {
+		                  var x = d.x - quad.point.x,
+		                      y = d.y - quad.point.y,
+		                      l = Math.sqrt(x * x + y * y),
+		                      r = d.radius + quad.point.radius + (d.color !== quad.point.color) * padding;
+		                  if (l < r) {
+		                      l = (l - r) / l * alpha;
+		                      d.x -= x *= l;
+		                      d.y -= y *= l;
+		                      quad.point.x += x;
+		                      quad.point.y += y;
+		                  }
+		              }
+		              return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+		          });
+		      };
+		  }
+	  
+		  var idClusterSelected = -1;
+		  var onCluster = false;
+	  
+		  onMouseClick = function(d) {
+		      // is another node is selected
+		      if (d.cluster == idClusterSelected) {
+		          onCluster = true;
+		      } else {
+		          unSelectCluster();
+		          selectCluster(d);
+			  displayView(d)
+			  displayComment(d)
+			  displayDuration(d)
+			  displayPopularity(d)
+		      }
+		  }
+	  
+		  function selectCluster(d) {
+	  
+		      // change global opacity
+		      node.style("opacity", 0.4);
+		      idClusterSelected = d.cluster
+	  
+		      // resize cluster's node and label
+		      svgCluster.selectAll(".node").filter(function(d) {
+		          return d.cluster == idClusterSelected;
+		      }).each(function() {
+		          var n = d3.select(this).transition().duration(300).style("opacity", 1);
+		          n.select("circle")
+		              .style("stroke-width", 2.5)
+		              .style("stroke-opacity", 1)
+		              .attr("r", function(d) {
+		                  return d.radius + 5;
+		              })
+		      });
+		  }
+	  
+		  function unSelectCluster() {
+
+		      // change global opacity
+		      node.style("opacity", 1);
+
+		      // resize last cluster's node and label
+		      if (idClusterSelected > -1) {
+		          svgCluster.selectAll(".node").filter(function(d) {
+		              return d.cluster == idClusterSelected;
+		          }).each(function() {
+		              var n = d3.select(this).transition().duration(300);
+		              n.select("circle")
+		                  .style("stroke-width", 0.5)
+		                  .style("stroke-opacity", 0.5)
+		                  .attr("r", function(d) {
+		                      return d.radius;
+		                  });
+		          });
+		      }
+		  }
+	  
+		  function zoom() {
+		      svgCluster.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+		  }
+	 
+	      });
+	}
+	displayCluster();
+/********************************************************* VIEW CHART ***********************************************************************/ 
+	function displayView(idCluster) {
+
+	}
+/******************************************************** COMMENT CHART *********************************************************************/ 
+	function displayComment(idCluster) {
+
+	}
+/******************************************************* DURATION CHART *********************************************************************/ 
+	function displayDuration(idCluster) {
+
+	}
+/****************************************************** POPULARITY CHART ********************************************************************/ 
+	function displayPopularity(idCluster) {
+
+	}
+/****************************************************** TITLE WORD CHART ********************************************************************/ 
+	function displayTitleWord(tag) {
+
+	}
+
+  </script>
+</body>
+
