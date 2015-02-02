@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Paul / Yse -->
+<link href="../stylesheets/nv.d3.css" rel="stylesheet" type="text/css">
+
+<style>
+   /* Global */
+   #containerNorth {
+        height:600px;
+        width: 100%; // make the container span the entire window
+    }
+    #containerNorth .left {
+        float: left;
+        width: 55%;
+        height:600px;
+    }
+    #containerNorth .right {
+        float: right;
+        width: 45%;
+        height:200px;
+    }
+
+    #containerSouth {
+        height:300px;
+        width: 100%; // make the container span the entire window
+    }
+    #containerSouth .left {
+        float: left;
+        width: 60%;
+        height:400px;
+    }
+    #containerSouth .right {
+        float: right;
+        width: 40%;
+        height:400px;
+    }
+
+   /* Martin */
+   body {
+       margin: 0 auto;
+       background: #272727;
+       overflow-y:scroll;
+   }
+
+   .rect {
+       background: #272727;
+       color: #ecf0f0;
+   }
+   .node circle {
+       fill: #ccc;
+   }
+
+   /* Paul - Yse */
+   .nv-x .tick line{ display: none}
+   .nv-y .tick line{ opacity: 0.3}
+
+   .nvd3 text {
+      font: 12px sans-serif;
+      fill: white;
+    }
+
+    #chart_popularity {
+      background-color: #272727
+    }
+
+    /* Pierre */
+    #containerNorth .right .nv-axis .tick line {display:none;}
+
+    .nvd3 .nv-multibarHorizontal text {
+      font-weight: bold;
+      fill: white;
+      stroke: white;
+    }
+
+    .nvd3 .nv-multibarHorizontal .nv-groups rect {
+        stroke-opacity: 0;
+        transition: fill-opacity 2000ms linear;
+        -moz-transition: fill-opacity 2000ms linear;
+        -webkit-transition: fill-opacity 2000ms linear;
+    }
+
+    .nvd3 .nv-discretebar .nv-groups text,
+    .nvd3 .nv-multibarHorizontal .nv-groups text {
+      font-weight: bold;
+      fill: rgba(255,255,255,1);
+      stroke: rgba(0,0,0,0);
+    }
+
+    #chart_view svg{
+      background-color: #272727;
+    }
+
+</style>
+
+<body>
+    <!-- Martin -->
+    <script src='../javascripts/d3.v3.js'></script>
+
+    <!-- Paul / Yse -->
+    <script src="../javascripts/nv.d3.js"></script>
+    <script src="../javascripts/utils.js"></script>
+    <script src="../javascripts/tooltip.js"></script>
+    <script src="../javascripts/interactiveLayer.js"></script>
+    <script src="../javascripts/legend.js"></script>
+    <script src="../javascripts/axis.js"></script>
+    <script src="../javascripts/scatter.js"></script>
+    <script src="../javascripts/stackedArea.js"></script>
+    <script src="../javascripts/YPstackedAreaChart.js"></script>
+
+    <!-- Pierre -->
+    <script src="../javascripts/discreteBar.js"></script>
+    <script src="../javascripts/discreteBarChart.js"></script>
+
+    <div id="containerNorth">
+        <div class="left">
+            <svg id="cluster"></svg>
+        </div>
+        <div class="right">
+            <svg id="chart_view"></svg>
+            <svg id="chart_comment"></svg>
+            <svg id="chart_runtime"></svg>
+        </div>
+    </div>
+    <div id="containerSouth">
+        <div class="left">
+            <svg id="chart_popularity"></svg>
+        </div>
+        <div class="right">
+            <svg id="chart_words"></svg>
+        </div>
+    </div>
+
+  <script>
+/************************************************************ GLOBAL ************************************************************************/
+      var widthCluster = 800;
+      var heightCluster = 600;
+      var colorBackground = "#272727";
+      var clusterNull = 99;
+/*********************************************************** CLUSTER ************************************************************************/
+      function displayCluster() {
+	      var m = 20,
+		  padding = 30,
+		  radius = d3.scale.sqrt().range([0, 12]),
+		  color = d3.scale.category20().domain(d3.range(m));
+
+	      d3.json("../dataset/generated/xhamster/json/cluster/cluster_xhamster.json", function(json) {
+
+		  var clusters = new Array(m);
+	  
+		  var range_scale = d3.scale.ordinal()
+		      .domain(d3.range(46))
+		      .rangePoints([8, 25]);
+	  
+		  var nodes = json.nodes.map(function(node) {
+		      var i = node.group,
+		          r = range_scale(node.degree),
+		          d = {
+		              tag: node.tags,
+		              cluster: node.group,
+		              radius: r,
+		              color: color(i),
+		              x: Math.cos(i / m * 2 * Math.PI) * 200 + widthCluster / 2 + Math.random(),
+		              y: Math.sin(i / m * 2 * Math.PI) * 200 + heightCluster / 2 + Math.random()
+		          };
+		      clusters[i] = d;
+		      return d;
+		  });
+	  	
+		force = d3.layout.force()
+		      .nodes(nodes)
+		      .size([widthCluster, heightCluster])
+		      .gravity(.02)
+		      .charge(0)
+		      .on("tick", tick)
+		      .start();
+
+		  var svgCluster = d3.select("#cluster").append("g")
+		      .attr({
+		          "class": "overlay",
+		          "width": widthCluster,
+		          "height": heightCluster
+		      })
+		      .on("dragstart", function() {
+		          d3.event.sourceEvent.stopPropagation(); // silence other listeners
+		      })
+		      .call(d3.behavior.zoom().scaleExtent([1, 8]).on("zoom", zoom))
+		      .append("g");
+	  
+		  var background = svgCluster.append("rect")
+		      .attr({
+		          "class": "overlay",
+		          "width": widthCluster,
+		          "height": heightCluster
+		      })
+		      .attr("fill", colorBackground)
+		      .on("click", function(d) {
+		          unSelectCluster();
+                  updateCharts(clusterNull);
+		      });
+	  
+		  var node = svgCluster.selectAll(".node")
+		      .data(nodes)
+		      .enter().append("g")
+		      .attr("class", "node")
+		      .on("click", function(d) {
+		          onMouseClick(d);
+		      })
+		      .call(force.drag);
+	  
+		  node.append("circle")
+		      .attr("r", function(d) {
+		          return d.radius;
+		      })
+		      .style("stroke", "black")
+		      .style("stroke-width", 0.3)
+		      .style("stroke-opacity", 0.5)
+		      .style("fill", function(d) {
+		          return color(d.cluster);
+		      });
+	  
+		  node.append("text")
+		      .attr("text-anchor", "middle")
+		      .attr("font-family", "Comic Sans MS")
+		      .attr("font-size", "9px")
+		      .attr("fill", "black")
+		      .text(function(d) {
+		          return d.tag;
+		      })
+		      .style("font-size", function(d) {
+		          return Math.min(2 * d.radius, (2 * d.radius - 8) / this.getComputedTextLength() * 10) + "px";
+		      })
+		      .attr("dy", ".35em");
+	  
+		  function tick(e) {
+		      node.each(cluster(10 * e.alpha * e.alpha))
+		          .each(collide(.5))
+		          .attr("transform", function(d) {
+		              return "translate(" + d.x + "," + d.y + ")";
+		          });
+		  }
+	  
+		  function cluster(alpha) {
+		      return function(d) {
+		          var cluster = clusters[d.cluster];
+		          if (cluster === d) return;
+		          var x = d.x - cluster.x,
+		              y = d.y - cluster.y,
+		              l = Math.sqrt(x * x + y * y),
+		              r = d.radius + cluster.radius;
+		          if (l != r) {
+		              l = (l - r) / l * alpha;
+		              d.x -= x *= l;
+		              d.y -= y *= l;
+		              cluster.x += x;
+		              cluster.y += y;
+		          }
+		      };
+		  }
+	  
+		  // Resolves collisions between d and all other circles.
+		  function collide(alpha) {
+		      var quadtree = d3.geom.quadtree(nodes);
+		      return function(d) {
+		          var r = d.radius + radius.domain()[1] + padding,
+		              nx1 = d.x - r,
+		              nx2 = d.x + r,
+		              ny1 = d.y - r,
+		              ny2 = d.y + r;
+		          quadtree.visit(function(quad, x1, y1, x2, y2) {
+		              if (quad.point && (quad.point !== d)) {
+		                  var x = d.x - quad.point.x,
+		                      y = d.y - quad.point.y,
+		                      l = Math.sqrt(x * x + y * y),
+		                      r = d.radius + quad.point.radius + (d.color !== quad.point.color) * padding;
+		                  if (l < r) {
+		                      l = (l - r) / l * alpha;
+		                      d.x -= x *= l;
+		                      d.y -= y *= l;
+		                      quad.point.x += x;
+		                      quad.point.y += y;
+		                  }
+		              }
+		              return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+		          });
+		      };
+		  }
+	  
+		  var idClusterSelected = -1;
+		  var onCluster = false;
+
+          // Initialize charts with null value
+          //------------------------------------------------------------------------------
+          var clusterNull = 99;
+          var file = "nb_views_" + clusterNull + ".json";
+          var chartview = displayGenericChart(file, '#chart_view');
+          var file = "nb_comments_" + clusterNull + ".json";
+          var chartcomment = displayGenericChart(file, '#chart_comment');
+          var file = "x_runtime_" + clusterNull + ".json";
+          var chartruntime = displayGenericChart(file, '#chart_runtime');
+          var file = "x_runtime_" + clusterNull + ".json";
+          var chartpopularity = displayPopularity(clusterNull);
+          //------------------------------------------------------------------------------
+
+		  onMouseClick = function(d) {
+		      // is another node is selected
+		      if (d.cluster == idClusterSelected) {
+		          onCluster = true;
+		      } else {
+		          unSelectCluster();
+		          selectCluster(d);
+                  updateCharts(d.cluster);
+		      }
+		  }
+
+          function updateCharts(idCluster) {
+              var file = "nb_views_" + idCluster + ".json";
+              redrawGraphStat(file, '#chart_view', chartview);
+              var file = "nb_comments_" + idCluster + ".json";
+              redrawGraphStat(file, '#chart_comment', chartcomment);
+              var file = "x_runtime_" + idCluster + ".json";
+              redrawGraphStat(file, '#chart_runtime', chartruntime);
+              redrawGraphPopularity(idCluster, chartpopularity);
+          }
+
+		  function selectCluster(d) {
+	  
+		      // change global opacity
+		      node.style("opacity", 0.4);
+		      idClusterSelected = d.cluster
+	  
+		      // resize cluster's node and label
+		      svgCluster.selectAll(".node").filter(function(d) {
+		          return d.cluster == idClusterSelected;
+		      }).each(function() {
+		          var n = d3.select(this).transition().duration(300).style("opacity", 1);
+		          n.select("circle")
+		              .style("stroke-width", 2.5)
+		              .style("stroke-opacity", 1)
+		              .attr("r", function(d) {
+		                  return d.radius + 5;
+		              })
+		      });
+		  }
+	  
+		  function unSelectCluster() {
+
+		      // change global opacity
+		      node.style("opacity", 1);
+
+		      // resize last cluster's node and label
+		      if (idClusterSelected > -1) {
+		          svgCluster.selectAll(".node").filter(function(d) {
+		              return d.cluster == idClusterSelected;
+		          }).each(function() {
+		              var n = d3.select(this).transition().duration(300);
+		              n.select("circle")
+		                  .style("stroke-width", 0.5)
+		                  .style("stroke-opacity", 0.5)
+		                  .attr("r", function(d) {
+		                      return d.radius;
+		                  });
+		          });
+		      }
+		  }
+	  
+		  function zoom() {
+		      svgCluster.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+		  }
+	 
+	      });
+	}
+	displayCluster();
+
+/******************************************************* GENERIC CHART **********************************************************************/
+function displayGenericChart(file, chart_svg) {
+
+        var chart = nv.models.discreteBarChart()
+              .x(function(d) { return d.label })
+              .y(function(d) { return d.value })
+              .staggerLabels(true)
+              //.staggerLabels(historicalBarChart[0].values.length > 8)
+              .tooltips(false)
+              .showValues(true);
+
+        chart.yAxis
+                .axisLabel("Number of videos")
+                .tickFormat(d3.format('f'));
+
+        // add axis names
+        // get info from title
+        var re = /[a-z]+_[a-z]+/;
+        var categorie = re.exec(file);
+
+        chart.xAxis
+                .axisLabel(categorie)
+                .rotateLabels(-35)
+                .tickFormat(d3.format('f'));
+
+        d3.json("../dataset/generated/xhamster/json/histo_stat/" + file, function(json) {
+
+            var data = json;
+
+            historicalBarChart = new d3.range(0,1).map(function(d,i) { return {
+              key: 'Stream' + i,
+              values: data.map( function(f,j) {
+                return {
+                         "value": f.y,
+                         "label": f.x
+                       }
+                    })
+                };
+            });
+
+            nv.addGraph(function() {
+
+              chartData = d3.select(chart_svg)
+                  .datum(historicalBarChart)
+                  .call(chart);
+
+              // white text
+              d3.selectAll('.nv-multiBarHorizontal text')
+                .style('fill', "white");
+
+              nv.utils.windowResize(chart.update);
+              return chart;
+            });
+        });
+     return chart;
+}
+
+redrawGraphStat = function(file, chart_svg, chart) {
+
+    d3.json("../dataset/generated/xhamster/json/histo_stat/" + file, function(json) {
+
+        var data = json;
+
+        historicalBarChart = new d3.range(0,1).map(function(d,i) { return {
+          key: 'Stream' + i,
+          values: data.map( function(f,j) {
+            return {
+                     "value": f.y,
+                     "label": f.x
+                   }
+                })
+            };
+        });
+
+        var re = /[a-z]+_[a-z]+/;
+        var categorie = re.exec(file);
+
+       d3.select(chart_svg)
+          .datum(historicalBarChart)
+          .call(chart)
+          .append("text")
+          .attr('x', 310)
+          .attr('y', 15)
+          .attr("text-anchor", "middle")
+          .attr('class', 'chart-title')
+          .style("fill", "white")
+          .style("font-size", "15px")
+          .text(categorie);
+
+      // white text
+      d3.selectAll('.nv-multiBarHorizontal text')
+        .style('fill', "white");
+      nv.utils.windowResize(chart.update);
+  });
+};
+/********************************************************* VIEW CHART ***********************************************************************/ 
+	function displayView(idCluster, chart) {
+        var file = "nb_views_" + idCluster + ".json";
+        redrawGraph(file, '#chart_view', chart);
+	}
+/******************************************************** COMMENT CHART *********************************************************************/ 
+	function displayComment(idCluster, chart) {
+        var file = "nb_comments_" + idCluster + ".json";
+        redrawGraph(file, '#chart_comment', chart);
+	}
+/******************************************************* DURATION CHART *********************************************************************/ 
+	function displayDuration(idCluster, chart) {
+        var file = "x_runtime_" + idCluster + ".json";
+        redrawGraph(file, '#chart_runtime', chart);
+	}
+/****************************************************** POPULARITY CHART ********************************************************************/
+
+    function displayPopularity(idCluster) {
+
+        //an example of harmonizing colors between visualizations
+        //observe that Consumer Discretionary and Consumer Staples have
+        //been flipped in the second chart
+        var colors = d3.scale.category20();
+        keyColor = function(d, i) {return colors(d.key)};
+
+        var chart = nv.models.stackedAreaChart()
+                   .xScale(d3.time.scale())
+                   .useInteractiveGuideline(true)
+                   .x(function(d) { return d[0] })
+                   .y(function(d) { return d[1] })
+                   .color(keyColor)
+                   .transitionDuration(300);
+
+        chart.xAxis.tickFormat(function(d) { return d3.time.format('%Y')(new Date(d)) }).ticks(d3.time.years);
+
+        chart.yAxis.tickFormat(d3.format('%'));
+
+        d3.json('../dataset/generated/xhamster/json/histo_popularity/cluster'+idCluster+'.json', function(data) {
+            var histcatexplong =data;
+            var histcatexpshort = data;
+
+            nv.addGraph(function() {
+
+              d3.select('#chart_popularity')
+                .datum(histcatexplong)
+                .transition().duration(1000)
+                .call(chart)
+                .transition().duration(0)
+                .each('start', function() {
+                    setTimeout(function() {
+                        d3.selectAll('#chart_popularity *').each(function() {
+                          if(this.__transition__)
+                            this.__transition__.duration = 1;
+                        })
+                      }, 0)
+                  });
+              nv.utils.windowResize(chart.update);
+              return chart;
+            });
+        });
+        return chart;
+	}
+
+redrawGraphPopularity = function(idCluster, chart) {
+
+    d3.json('../dataset/generated/xhamster/json/histo_popularity/cluster'+idCluster+'.json', function(data) {
+      var histcatexplong =data;
+      var histcatexpshort = data;
+
+      //an example of harmonizing colors between visualizations
+      //observe that Consumer Discretionary and Consumer Staples have
+      //been flipped in the second chart
+      var colors = d3.scale.category20();
+      var keyColor = function(d, i) {return colors(d.key)};
+
+      d3.select('#chart_popularity')
+        .datum(histcatexplong)
+        .transition().duration(1000)
+        .call(chart)
+        .transition().duration(0)
+        .each('start', function() {
+            setTimeout(function() {
+                d3.selectAll('#chart_popularity *').each(function() {
+                  if(this.__transition__)
+                    this.__transition__.duration = 1;
+                })
+              }, 0)
+          })
+        nv.utils.windowResize(chart.update);
+    });
+}
+/****************************************************** TITLE WORD CHART ********************************************************************/ 
+	function displayTitleWord(tag) {
+
+	}
+
+  </script>
+</body>
+
