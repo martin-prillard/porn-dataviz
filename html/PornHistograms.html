@@ -103,18 +103,19 @@ nv.addGraph(function() {
 
     // add axis names
     // get info from title
-    var re = /[a-z]+_[a-z]+/;
+    var re = /([a-z]+)_([a-z]+)/;
     var categorie = re.exec(file);
 
 
     chart.yAxis
         .axisLabel("Number of videos")
         .tickFormat(d3.format('f'));
-
+/*
     chart.xAxis
         .axisLabel(categorie)
         .rotateLabels(-35)
         .tickFormat(d3.format('f'));
+        */
 
 
   d3.select('#chart1 svg')
@@ -128,13 +129,18 @@ nv.addGraph(function() {
       .style("fill", "white")
       .style("font-weight", "bold")
       .style("font-size", "20px")
-      .text(categorie)
+      .text(categorie[2]);
+
+  var xTicks = d3.select('.nv-x.nv-axis > g').selectAll('g');
+  xTicks
+    .selectAll('text')
+    .attr('transform', function(d,i,j) { return 'translate (-15, 16) rotate(-40 0,0)' }) ;
 
 
 
   // white text
   d3.selectAll('.nv-multiBarHorizontal text')
-    .style('fill', "white")
+    .style('fill', "white");
 
 
 
