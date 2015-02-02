@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<link href="../javascripts/nv.d3.css" rel="stylesheet" type="text/css">
+
+<style>
+
+.nv-axis .tick line {
+    display:none;
+}
+
+.nvd3 .nv-multibarHorizontal text {
+  font-weight: bold;
+  fill: white;
+  stroke: white;
+}
+
+.nvd3 .nv-multibarHorizontal .nv-groups rect {
+  stroke-opacity: 0;
+  transition: fill-opacity 2000ms linear;
+  -moz-transition: fill-opacity 2000ms linear;
+  -webkit-transition: fill-opacity 2000ms linear;
+}
+
+body {
+  overflow-y:scroll;
+}
+
+text {
+  font: 12px sans-serif;
+  fill: white;
+}
+
+svg {
+  display: block;
+}
+
+.nvd3 .nv-discretebar .nv-groups text,
+.nvd3 .nv-multibarHorizontal .nv-groups text {
+  font-weight: bold;
+  fill: rgba(255,255,255,1);
+  stroke: rgba(0,0,0,0);
+}
+
+
+#chart1 svg{
+  height: 500px;
+  min-width: 100px;
+  min-height: 100px;
+  background-color: #272727;
+
+/*
+  margin: 10px;
+  Minimum height and width is a good idea to prevent negative SVG dimensions...
+  For example width should be =< margin.left + margin.right + 1,
+  of course 1 pixel for the entire chart would not be very useful, BUT should not have errors
+*/
+}
+
+</style>
+<body>
+
+  <div id="chart1">
+    <svg></svg>
+  </div>
+
+<script src="../javascripts/d3.v3.js"></script>
+<script src="../javascripts/nv.d3.js"></script>
+<!-- including all the components so I don't have to minify every time I test in development -->
+<script src="../javascripts/tooltip.js"></script>
+<script src="../javascripts/utils.js"></script>
+<script src="../javascripts/axis.js"></script>
+<script src="../javascripts/discreteBar.js"></script>
+<script src="../javascripts/discreteBarChart.js"></script>
+<script>
+
+var file = "nb_views_10"
+
+d3.json("../dataset/generated/xhamster/json/histo_stat/" + file + ".json", function(json) {
+
+var data = json;
+
+historicalBarChart = new d3.range(0,1).map(function(d,i) { return {
+  key: 'Stream' + i,
+  values: data.map( function(f,j) {
+    return {
+             "value": f.y,
+             "label": f.x
+           }
+        })
+    };
+});
+
+nv.addGraph(function() {
+  var chart = nv.models.discreteBarChart()
+      .x(function(d) { return d.label })
+      .y(function(d) { return d.value })
+      .staggerLabels(true)
+      //.staggerLabels(historicalBarChart[0].values.length > 8)
+      .tooltips(false)
+      .showValues(true)
+      ;
+
+    // add axis names
+    // get info from title
+    var re = /[a-z]+_[a-z]+/;
+    var categorie = re.exec(file);
+
+
+    chart.yAxis
+        .axisLabel("Number of videos")
+        .tickFormat(d3.format('f'));
+
+    chart.xAxis
+        .axisLabel(categorie)
+        .rotateLabels(-35)
+        .tickFormat(d3.format('f'));
+
+
+  d3.select('#chart1 svg')
+      .datum(historicalBarChart)
+      .call(chart)
+      .append("text")
+      .attr('x', 600)
+      .attr('y', 50)
+      .attr("text-anchor", "middle")
+      .attr('class', 'chart-title')
+      .style("fill", "white")
+      .style("font-weight", "bold")
+      .style("font-size", "20px")
+      .text(categorie)
+
+
+
+  // white text
+  d3.selectAll('.nv-multiBarHorizontal text')
+    .style('fill', "white")
+
+
+
+
+  nv.utils.windowResize(chart.update);
+  return chart;
+
+});
+
+});
+
+
+</script>

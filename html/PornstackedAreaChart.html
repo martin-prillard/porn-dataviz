@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<link href="../stylesheets/nv.d3.css" rel="stylesheet" type="text/css">
+
+<style>
+
+.nv-x .tick line{ display: none;}
+.nv-y .tick line{ opacity: 0.3}
+
+body {
+  overflow-y:scroll;
+}
+
+text {
+  font: 12px sans-serif;
+  fill: white;
+}
+
+#chart1, #chart2 {
+  height: 500px;
+  background-color: #272727
+}
+
+</style>
+<body>
+
+<script src="../javascripts/d3.v3.js"></script>
+<script src="../javascripts/nv.d3.js"></script>
+<script src="../javascripts/utils.js"></script>
+<script src="../javascripts/tooltip.js"></script>
+<script src="../javascripts/interactiveLayer.js"></script>
+<script src="../javascripts/legend.js"></script>
+<script src="../javascripts/axis.js"></script>
+<script src="../javascripts/scatter.js"></script>
+<script src="../javascripts/stackedArea.js"></script>
+<script src="../javascripts/YPstackedAreaChart.js"></script>
+
+  <div>
+    <svg id="chart1"></svg>
+  </div>
+
+<script>
+
+var num=14 //faire refresh
+
+d3.json('../dataset/generated/xhamster/json/histo_popularity/cluster'+num+'.json', function(data) {
+var histcatexplong =data
+var histcatexpshort = data
+
+
+//an example of harmonizing colors between visualizations
+//observe that Consumer Discretionary and Consumer Staples have
+//been flipped in the second chart
+var colors = d3.scale.category20();
+keyColor = function(d, i) {return colors(d.key)};
+
+var chart;
+nv.addGraph(function() {
+  chart = nv.models.stackedAreaChart()
+               .xScale(d3.time.scale())
+                .useInteractiveGuideline(true)
+                .x(function(d) { return d[0] })
+                .y(function(d) { return d[1] })
+                .color(keyColor)
+                .transitionDuration(300);
+
+  chart.xAxis
+      .tickFormat(function(d) { return d3.time.format('%Y')(new Date(d)) }).ticks(d3.time.years);
+
+  chart.yAxis
+      .tickFormat(d3.format('%'));
+
+  d3.select('#chart1')
+    .datum(histcatexplong)
+    .transition().duration(1000)
+    .call(chart)
+    .transition().duration(0)
+    .each('start', function() {
+        setTimeout(function() {
+            d3.selectAll('#chart1 *').each(function() {
+              console.log('start',this.__transition__, this)
+              // while(this.__transition__)
+              if(this.__transition__)
+                this.__transition__.duration = 1;
+            })
+          }, 0)
+      })
+
+  nv.utils.windowResize(chart.update);
+
+  return chart;
+});
+
+nv.addGraph(function() {
+  var chart = nv.models.stackedAreaChart()
+                .x(function(d) { return d[0] })
+                .y(function(d) { return d[1] })
+                .color(keyColor)
+                ;
+
+  chart.xAxis
+      .tickFormat(function(d) { return d3.time.format('%Y')(new Date(d)) });
+
+  chart.yAxis
+      .tickFormat(d3.format(',.2f'));
+
+  d3.select('#chart2')
+    .datum(histcatexpshort)
+    .transition()
+      .call(chart);
+
+  nv.utils.windowResize(chart.update);
+
+  return chart;
+});
+
+})
+
+</script>
