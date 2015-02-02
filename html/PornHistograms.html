@@ -131,7 +131,8 @@ nv.addGraph(function() {
       .style("font-size", "20px")
       .text(categorie[2]);
 
-  var xTicks = d3.select('.nv-x.nv-axis > g').selectAll('g');
+  //var xTicks = d3.select('.nv-x.nv-axis > g').selectAll('g');
+  var xTicks = d3.select('.nv-x.nv-axis');
   xTicks
     .selectAll('text')
     .attr('transform', function(d,i,j) { return 'translate (-15, 16) rotate(-40 0,0)' }) ;
