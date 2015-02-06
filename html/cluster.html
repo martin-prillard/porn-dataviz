@@ -18,12 +18,12 @@
     }
     #containerNorth .left {
         float: left;
-        width: 55%;
+        width: 50%;
         height:600px;
     }
     #containerNorth .right {
         float: right;
-        width: 45%;
+        width: 50%;
         height:200px;
     }
 
@@ -33,12 +33,12 @@
     }
     #containerSouth .left {
         float: left;
-        width: 60%;
+        width: 50%;
         height:400px;
     }
     #containerSouth .right {
         float: right;
-        width: 40%;
+        width: 50%;
         height:400px;
     }
 
@@ -133,7 +133,7 @@
 
   <script>
 /************************************************************ GLOBAL ************************************************************************/
-      var widthCluster = 800;
+      var widthCluster = 600;
       var heightCluster = 600;
       var colorBackground = "#272727";
       var clusterNull = 99;
@@ -147,11 +147,11 @@
 	      d3.json("../dataset/generated/xhamster/json/cluster/cluster_xhamster.json", function(json) {
 
 		  var clusters = new Array(m);
-	  
+
 		  var range_scale = d3.scale.ordinal()
 		      .domain(d3.range(46))
 		      .rangePoints([8, 25]);
-	  
+
 		  var nodes = json.nodes.map(function(node) {
 		      var i = node.group,
 		          r = range_scale(node.degree),
@@ -166,7 +166,7 @@
 		      clusters[i] = d;
 		      return d;
 		  });
-	  	
+
 		force = d3.layout.force()
 		      .nodes(nodes)
 		      .size([widthCluster, heightCluster])
@@ -186,7 +186,7 @@
 		      })
 		      .call(d3.behavior.zoom().scaleExtent([1, 8]).on("zoom", zoom))
 		      .append("g");
-	  
+
 		  var background = svgCluster.append("rect")
 		      .attr({
 		          "class": "overlay",
@@ -198,7 +198,7 @@
 		          unSelectCluster();
                   updateCharts(clusterNull);
 		      });
-	  
+
 		  var node = svgCluster.selectAll(".node")
 		      .data(nodes)
 		      .enter().append("g")
@@ -207,7 +207,7 @@
 		          onMouseClick(d);
 		      })
 		      .call(force.drag);
-	  
+
 		  node.append("circle")
 		      .attr("r", function(d) {
 		          return d.radius;
@@ -218,7 +218,7 @@
 		      .style("fill", function(d) {
 		          return color(d.cluster);
 		      });
-	  
+
 		  node.append("text")
 		      .attr("text-anchor", "middle")
 		      .attr("font-family", "Comic Sans MS")
@@ -231,7 +231,7 @@
 		          return Math.min(2 * d.radius, (2 * d.radius - 8) / this.getComputedTextLength() * 10) + "px";
 		      })
 		      .attr("dy", ".35em");
-	  
+
 		  function tick(e) {
 		      node.each(cluster(10 * e.alpha * e.alpha))
 		          .each(collide(.5))
@@ -239,7 +239,7 @@
 		              return "translate(" + d.x + "," + d.y + ")";
 		          });
 		  }
-	  
+
 		  function cluster(alpha) {
 		      return function(d) {
 		          var cluster = clusters[d.cluster];
@@ -257,7 +257,7 @@
 		          }
 		      };
 		  }
-	  
+
 		  // Resolves collisions between d and all other circles.
 		  function collide(alpha) {
 		      var quadtree = d3.geom.quadtree(nodes);
@@ -285,7 +285,7 @@
 		          });
 		      };
 		  }
-	  
+
 		  var idClusterSelected = -1;
 		  var onCluster = false;
 
@@ -309,26 +309,26 @@
 		      } else {
 		          unSelectCluster();
 		          selectCluster(d);
-                  updateCharts(d.cluster);
+                  updateCharts(d.cluster, d.color);
 		      }
 		  }
 
-          function updateCharts(idCluster) {
+          function updateCharts(idCluster, color_cluster) {
               var file = "nb_views_" + idCluster + ".json";
-              redrawGraphStat(file, '#chart_view', chartview);
+              redrawGraphStat(file, '#chart_view', chartview, color_cluster);
               var file = "nb_comments_" + idCluster + ".json";
-              redrawGraphStat(file, '#chart_comment', chartcomment);
+              redrawGraphStat(file, '#chart_comment', chartcomment, color_cluster);
               var file = "x_runtime_" + idCluster + ".json";
-              redrawGraphStat(file, '#chart_runtime', chartruntime);
+              redrawGraphStat(file, '#chart_runtime', chartruntime, color_cluster);
               redrawGraphPopularity(idCluster, chartpopularity);
           }
 
 		  function selectCluster(d) {
-	  
+
 		      // change global opacity
 		      node.style("opacity", 0.4);
 		      idClusterSelected = d.cluster
-	  
+
 		      // resize cluster's node and label
 		      svgCluster.selectAll(".node").filter(function(d) {
 		          return d.cluster == idClusterSelected;
@@ -342,7 +342,7 @@
 		              })
 		      });
 		  }
-	  
+
 		  function unSelectCluster() {
 
 		      // change global opacity
@@ -365,11 +365,11 @@
 
               idClusterSelected = -1;
 		  }
-	  
+
 		  function zoom() {
 		      svgCluster.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
 		  }
-	 
+
 	      });
 	}
 	displayCluster();
@@ -377,21 +377,18 @@
 /******************************************************* GENERIC CHART **********************************************************************/
     function displayGenericChart(file, chart_svg) {
 
-            var chart = nv.models.discreteBarChart()
-                  .x(function(d) { return d.label })
-                  .y(function(d) { return d.value })
-                  .staggerLabels(true)
-                  .tooltips(false)
-                  .showValues(true)
-                  .noData("");
-
-            chart.yAxis
-                    .axisLabel("Number of videos")
-                    .tickFormat(d3.format('f'));
+          var chart = nv.models.discreteBarChart()
+              .x(function(d) { return d.label })
+              .y(function(d) { return d.value })
+              .staggerLabels(true)
+              .tooltips(false)
+              .showValues(true)
+              .showYAxis(false)
+              .noData("");
 
             // add axis names
             // get info from title
-            var re = /[a-z]+_[a-z]+/;
+            var re = /([a-z]+)_([a-z]+)/;
             var categorie = re.exec(file);
 
             chart.xAxis
@@ -431,7 +428,7 @@
          return chart;
     }
 
-    redrawGraphStat = function(file, chart_svg, chart) {
+    redrawGraphStat = function(file, chart_svg, chart, cluster_color) {
 
         d3.json("../dataset/generated/xhamster/json/histo_stat/" + file, function(json) {
 
@@ -448,22 +445,35 @@
                 };
             });
 
-          var re = /[a-z]+_[a-z]+/;
+          chart.color([cluster_color])
+
+          var re = /([a-z]+)_([a-z]+)/;
           var categorie = re.exec(file);
           if ( data.length == 0 ) {
              d3.select(chart_svg).html("");
           } else {
               d3.select(chart_svg)
-                      .datum(historicalBarChart)
-                      .call(chart)
-                      .append("text")
-                      .attr('x', 310)
-                      .attr('y', 15)
-                      .attr("text-anchor", "middle")
-                      .attr('class', 'chart-title')
-                      .style("fill", "white")
-                      .style("font-size", "15px")
-                      .text(categorie);
+                .datum(historicalBarChart)
+                .call(chart)
+                .append("text")
+                .attr('x', 310)
+                .attr('y', 30)
+                .attr("text-anchor", "middle")
+                .attr('class', 'chart-title')
+                .style("fill", "white")
+                .style("font-size", "15px")
+                .text(categorie[2]);
+
+              d3.select(chart_svg)
+                .append("text")
+                .attr('x', -85)
+                .attr('y', 40)
+                .attr("text-anchor", "middle")
+                .attr('class', 'chart-title')
+                .style("fill", "white")
+                .style("font-size", "15px")
+                .text("Number of videos")
+                .attr('transform', function(d,i,j) { return 'rotate(-90,0,0)' });
 
               // white text
               d3.selectAll('.nv-multiBarHorizontal text')
@@ -472,17 +482,17 @@
           }
       });
     };
-/********************************************************* VIEW CHART ***********************************************************************/ 
+/********************************************************* VIEW CHART ***********************************************************************/
 	function displayView(idCluster, chart) {
         var file = "nb_views_" + idCluster + ".json";
         redrawGraph(file, '#chart_view', chart);
 	}
-/******************************************************** COMMENT CHART *********************************************************************/ 
+/******************************************************** COMMENT CHART *********************************************************************/
 	function displayComment(idCluster, chart) {
         var file = "nb_comments_" + idCluster + ".json";
         redrawGraph(file, '#chart_comment', chart);
 	}
-/******************************************************* DURATION CHART *********************************************************************/ 
+/******************************************************* DURATION CHART *********************************************************************/
 	function displayDuration(idCluster, chart) {
         var file = "x_runtime_" + idCluster + ".json";
         redrawGraph(file, '#chart_runtime', chart);
@@ -568,7 +578,7 @@
           }
         });
     };
-/****************************************************** TITLE WORD CHART ********************************************************************/ 
+/****************************************************** TITLE WORD CHART ********************************************************************/
 	function displayTitleWord(tag) {
 
 	}
