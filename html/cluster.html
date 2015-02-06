@@ -6,6 +6,12 @@
 
 <style>
    /* Global */
+   body {
+       margin: 15px 15px 15px 15px;
+       background: #272727;
+       overflow-y:scroll;
+   }
+
    #containerNorth {
         height:600px;
         width: 100%; // make the container span the entire window
@@ -37,12 +43,6 @@
     }
 
    /* Martin */
-   body {
-       margin: 0 auto;
-       background: #272727;
-       overflow-y:scroll;
-   }
-
    .rect {
        background: #272727;
        color: #ecf0f0;
@@ -362,6 +362,8 @@
 		                  });
 		          });
 		      }
+
+              idClusterSelected = -1;
 		  }
 	  
 		  function zoom() {
@@ -373,29 +375,63 @@
 	displayCluster();
 
 /******************************************************* GENERIC CHART **********************************************************************/
-function displayGenericChart(file, chart_svg) {
+    function displayGenericChart(file, chart_svg) {
 
-        var chart = nv.models.discreteBarChart()
-              .x(function(d) { return d.label })
-              .y(function(d) { return d.value })
-              .staggerLabels(true)
-              //.staggerLabels(historicalBarChart[0].values.length > 8)
-              .tooltips(false)
-              .showValues(true);
+            var chart = nv.models.discreteBarChart()
+                  .x(function(d) { return d.label })
+                  .y(function(d) { return d.value })
+                  .staggerLabels(true)
+                  .tooltips(false)
+                  .showValues(true)
+                  .noData("");
 
-        chart.yAxis
-                .axisLabel("Number of videos")
-                .tickFormat(d3.format('f'));
+            chart.yAxis
+                    .axisLabel("Number of videos")
+                    .tickFormat(d3.format('f'));
 
-        // add axis names
-        // get info from title
-        var re = /[a-z]+_[a-z]+/;
-        var categorie = re.exec(file);
+            // add axis names
+            // get info from title
+            var re = /[a-z]+_[a-z]+/;
+            var categorie = re.exec(file);
 
-        chart.xAxis
-                .axisLabel(categorie)
-                .rotateLabels(-35)
-                .tickFormat(d3.format('f'));
+            chart.xAxis
+                    .axisLabel(categorie)
+                    .rotateLabels(-35)
+                    .tickFormat(d3.format('f'));
+
+            d3.json("../dataset/generated/xhamster/json/histo_stat/" + file, function(json) {
+
+                var data = json;
+
+                historicalBarChart = new d3.range(0,1).map(function(d,i) { return {
+                  key: 'Stream' + i,
+                  values: data.map( function(f,j) {
+                    return {
+                             "value": f.y,
+                             "label": f.x
+                           }
+                        })
+                    };
+                });
+
+                nv.addGraph(function() {
+
+                  chartData = d3.select(chart_svg)
+                      .datum(historicalBarChart)
+                      .call(chart);
+
+                  // white text
+                  d3.selectAll('.nv-multiBarHorizontal text')
+                    .style('fill', "white");
+
+                  nv.utils.windowResize(chart.update);
+                  return chart;
+                });
+            });
+         return chart;
+    }
+
+    redrawGraphStat = function(file, chart_svg, chart) {
 
         d3.json("../dataset/generated/xhamster/json/histo_stat/" + file, function(json) {
 
@@ -412,61 +448,30 @@ function displayGenericChart(file, chart_svg) {
                 };
             });
 
-            nv.addGraph(function() {
-
-              chartData = d3.select(chart_svg)
-                  .datum(historicalBarChart)
-                  .call(chart);
+          var re = /[a-z]+_[a-z]+/;
+          var categorie = re.exec(file);
+          if ( data.length == 0 ) {
+             d3.select(chart_svg).html("");
+          } else {
+              d3.select(chart_svg)
+                      .datum(historicalBarChart)
+                      .call(chart)
+                      .append("text")
+                      .attr('x', 310)
+                      .attr('y', 15)
+                      .attr("text-anchor", "middle")
+                      .attr('class', 'chart-title')
+                      .style("fill", "white")
+                      .style("font-size", "15px")
+                      .text(categorie);
 
               // white text
               d3.selectAll('.nv-multiBarHorizontal text')
-                .style('fill', "white");
-
+                      .style('fill', "white");
               nv.utils.windowResize(chart.update);
-              return chart;
-            });
-        });
-     return chart;
-}
-
-redrawGraphStat = function(file, chart_svg, chart) {
-
-    d3.json("../dataset/generated/xhamster/json/histo_stat/" + file, function(json) {
-
-        var data = json;
-
-        historicalBarChart = new d3.range(0,1).map(function(d,i) { return {
-          key: 'Stream' + i,
-          values: data.map( function(f,j) {
-            return {
-                     "value": f.y,
-                     "label": f.x
-                   }
-                })
-            };
-        });
-
-        var re = /[a-z]+_[a-z]+/;
-        var categorie = re.exec(file);
-
-       d3.select(chart_svg)
-          .datum(historicalBarChart)
-          .call(chart)
-          .append("text")
-          .attr('x', 310)
-          .attr('y', 15)
-          .attr("text-anchor", "middle")
-          .attr('class', 'chart-title')
-          .style("fill", "white")
-          .style("font-size", "15px")
-          .text(categorie);
-
-      // white text
-      d3.selectAll('.nv-multiBarHorizontal text')
-        .style('fill', "white");
-      nv.utils.windowResize(chart.update);
-  });
-};
+          }
+      });
+    };
 /********************************************************* VIEW CHART ***********************************************************************/ 
 	function displayView(idCluster, chart) {
         var file = "nb_views_" + idCluster + ".json";
@@ -498,7 +503,8 @@ redrawGraphStat = function(file, chart_svg, chart) {
                    .x(function(d) { return d[0] })
                    .y(function(d) { return d[1] })
                    .color(keyColor)
-                   .transitionDuration(300);
+                   .transitionDuration(300)
+                   .noData("");
 
         chart.xAxis.tickFormat(function(d) { return d3.time.format('%Y')(new Date(d)) }).ticks(d3.time.years);
 
@@ -530,34 +536,38 @@ redrawGraphStat = function(file, chart_svg, chart) {
         return chart;
 	}
 
-redrawGraphPopularity = function(idCluster, chart) {
+    redrawGraphPopularity = function(idCluster, chart) {
 
-    d3.json('../dataset/generated/xhamster/json/histo_popularity/cluster'+idCluster+'.json', function(data) {
-      var histcatexplong =data;
-      var histcatexpshort = data;
+        d3.json('../dataset/generated/xhamster/json/histo_popularity/cluster'+idCluster+'.json', function(data) {
+          var histcatexplong =data;
+          var histcatexpshort = data;
 
-      //an example of harmonizing colors between visualizations
-      //observe that Consumer Discretionary and Consumer Staples have
-      //been flipped in the second chart
-      var colors = d3.scale.category20();
-      var keyColor = function(d, i) {return colors(d.key)};
+          //an example of harmonizing colors between visualizations
+          //observe that Consumer Discretionary and Consumer Staples have
+          //been flipped in the second chart
+          var colors = d3.scale.category20();
+          var keyColor = function(d, i) {return colors(d.key)};
 
-      d3.select('#chart_popularity')
-        .datum(histcatexplong)
-        .transition().duration(1000)
-        .call(chart)
-        .transition().duration(0)
-        .each('start', function() {
-            setTimeout(function() {
-                d3.selectAll('#chart_popularity *').each(function() {
-                  if(this.__transition__)
-                    this.__transition__.duration = 1;
-                })
-              }, 0)
-          })
-        nv.utils.windowResize(chart.update);
-    });
-}
+          if ( data.length == 0 ) {
+             d3.select('#chart_popularity').html("");
+          } else {
+              d3.select('#chart_popularity')
+                      .datum(histcatexplong)
+                      .transition().duration(1000)
+                      .call(chart)
+                      .transition().duration(0)
+                      .each('start', function () {
+                          setTimeout(function () {
+                              d3.selectAll('#chart_popularity *').each(function () {
+                                  if (this.__transition__)
+                                      this.__transition__.duration = 1;
+                              })
+                          }, 0)
+                      });
+              nv.utils.windowResize(chart.update);
+          }
+        });
+    };
 /****************************************************** TITLE WORD CHART ********************************************************************/ 
 	function displayTitleWord(tag) {
 
