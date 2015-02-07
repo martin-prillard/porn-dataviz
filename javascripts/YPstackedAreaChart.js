@@ -321,11 +321,13 @@ nv.models.stackedAreaChart = function() {
           });
 
         if (display) {
-          alert(tags[idTag])
+          updateTitleWord(tags[idTag])
+        } else {
+            removeTitleWord()
         }
 
         state.disabled = data.map(function(d) { return !!d.disabled });
-        //alert(state[key].slice(0))
+
         dispatch.stateChange(state);
 
         chart.update();
@@ -347,7 +349,6 @@ nv.models.stackedAreaChart = function() {
         d.disabled = false;
 
         stacked.style(d.style);
-
 
         state.style = stacked.style();
         dispatch.stateChange(state);

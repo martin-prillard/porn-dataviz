@@ -9,24 +9,8 @@
   fill: #eee;
 }
 
-body {
-    background: #272727;
-}
-
 line {
   stroke: #fff;
-}
-
-h2 {
-    color: white;
-}
-
-#description {
-    color: white;
-}
-
-text {
-  fill: white;
 }
 
 text.active {
@@ -39,25 +23,24 @@ text.active {
 <header>
 </header>
 
-<h2><i>XHamster category ranking</i></h2>
+<h2><i>XHamster & XNXX Category ranking</i></h2>
 
 <aside style="margin-top:80px;">
-    <div id="description">
-        <p>Order: <select id="order">
-          <option value="tags">by Tags</option>
-          <option value="count">by Frequency</option>
-          <option value="group">by Cluster</option>
-        </select>
-            <p>This matrix diagram visualizes porn tags co-occurrences in XHamster.
+<p>Order: <select id="order">
+  <option value="tags">by Tags</option>
+  <option value="count">by Frequency</option>
+  <option value="group">by Cluster</option>
+</select>
 
-            <p>Each colored cell represents two tags related; darker cells indicate tags that co-occurred more frequently.
+<p>This matrix diagram visualizes porn tags co-occurrences in XHamster and XNXX combined.
 
-            <p>here color depicts clusters computed by a community-detection algorithm.</p>
+<p>Each colored cell represents two tags related; darker cells indicate tags that co-occurred more frequently.
 
-            <p>Use the drop-down menu to reorder the matrix and explore the data.
+<p>here color depicts clusters computed by a community-detection algorithm.</p>
 
-            <p>Built with <a href="http://d3js.org/">d3.js</a>.
-    </div>
+<p>Use the drop-down menu to reorder the matrix and explore the data.
+
+<p>Built with <a href="http://d3js.org/">d3.js</a>.
 </aside>
 
 <script>
@@ -178,7 +161,7 @@ d3.json("../dataset/generated/xhamster/link_xhamster.json", function(link_xhamst
   function order(value) {
     x.domain(orders[value]);
 
-    var t = svg.transition().duration(2000);
+    var t = svg.transition().duration(2500);
 
     t.selectAll(".row")
         .delay(function(d, i) { return x(i) * 4; })
