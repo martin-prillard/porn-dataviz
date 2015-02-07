@@ -568,6 +568,33 @@
           var keyColor = function(d, i) {return colors(d.key)};
 
          d3.select(chart_svg).html("");
+          // YSE AJOUT DES LABELS SUR LES AXES 
+         d3.select(chart_svg)
+            .append("text")
+            .attr("class", "y label")
+            .attr("text-anchor", "middle")
+            .attr('x',-200)
+            .attr('y', 15)
+            //.attr('class', 'chart-title')
+            .style("fill", "white")
+            .style("font-size", "15px")
+                //.attr("y", 20)
+                .attr("dy", ".75em")
+                .attr("transform", "rotate(-90)")
+                .text("Proportion of tags among videos");
+
+            d3.select(chart_svg)
+            .append("text")
+            .attr("class", "y label")
+            .attr("text-anchor", "middle")
+            //.attr("x", width +3)
+            //.attr("y", height - 6)
+            .attr("x", 650)
+            .attr("y", 20)
+            .style("fill", "white")
+            .style("font-size", "15px")
+            .text("Popularity of tags over time");
+            // FIN DE LA MODIF YSE LABELS
          d3.select(chart_svg)
                   .datum(histcatexplong)
                   .transition().duration(1000)
