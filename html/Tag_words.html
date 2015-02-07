@@ -16,9 +16,9 @@ body {
 <script src="../javascripts/d3.layout.cloud.js"></script>
 <script>
 
-var TAG = 'BABYSITTERS';
+var TAG = 'BABES';
 
-d3.json("../dataset/generated/xhamster/Tag_words_"+TAG+".json", function(error, json) {
+d3.json("../dataset/generated/xhamster/JSON/words_tag/Tag_words_"+TAG+".json", function(error, json) {
   if (error) return console.warn(error);
   
 
@@ -29,7 +29,7 @@ d3.json("../dataset/generated/xhamster/Tag_words_"+TAG+".json", function(error, 
 // rescaling the data form json
   var range_scale = d3.scale.ordinal()
     .domain(d3.range(1500))         
-    .rangePoints([5,100])
+    .rangePoints([5,200])
 
 /*
     var words_tag = json.map(function(word) {
@@ -46,7 +46,7 @@ d3.json("../dataset/generated/xhamster/Tag_words_"+TAG+".json", function(error, 
        }))
       .rotate(function() { return ~~(Math.random() * 2) * 90; })
       .font("Impact")
-      .fontSize(function(d) { return d.size; })
+      .fontSize(function(d) { return d.size*0.3; })
       .on("end", draw)
       .start();
 
@@ -56,7 +56,7 @@ d3.json("../dataset/generated/xhamster/Tag_words_"+TAG+".json", function(error, 
           .append("g").attr("transform", "translate(450,300)")
           .selectAll("text").data(words)
           .enter().append("text")
-          .style("font-size", function(d) { return d.size*0+ "px"; })
+          .style("font-size", function(d) { return d.size+ "px"; })
           .style("font-family", "Impact")
           .style("fill", function(d, i) { return fill(i); })
           .attr("text-anchor", "middle")
