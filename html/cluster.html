@@ -8,7 +8,7 @@
    /* Global */
    body {
        margin: 15px 15px 15px 15px;
-       background: #272727;
+       background: #292929;
    }
    #containerNorth {
         height:600px;
@@ -16,12 +16,12 @@
     }
     #containerNorth .left {
         float: left;
-        width: 50%;
+        width: 60%;
         height:600px;
     }
     #containerNorth .right {
         float: right;
-        width: 50%;
+        width: 40%;
         height:200px;
     }
     #containerSouth {
@@ -29,17 +29,17 @@
     }
     #containerSouth .left {
         float: left;
-        width: 50%;
+        width: 60%;
         height: 0px;
     }
     #containerSouth .right {
         float: right;
-        width: 50%;
+        width: 40%;
         height: 0px;
     }
    /* Martin */
    .rect {
-       background: #272727;
+       background: #292929;
        color: #ecf0f0;
    }
    .node circle {
@@ -54,7 +54,7 @@
     }
     #chart_popularity {
       height : 0
-      background-color: #272727
+      background-color: #292929
     }
     /* Pierre */
     #containerNorth .right .nv-axis .tick line {display:none;}
@@ -76,7 +76,7 @@
       stroke: rgba(0,0,0,0);
     }
     #chart_view svg{
-      background-color: #272727;
+      background-color: #292929;
     }
 </style>
 
@@ -133,9 +133,9 @@
 
   <script>
 /************************************************************ GLOBAL ************************************************************************/
-      var widthCluster = 600;
+      var widthCluster = document.getElementById("containerNorth").getElementsByClassName("left")[0].offsetWidth;
       var heightCluster = 600;
-      var colorBackground = "#272727";
+      var colorBackground = "#292929";
       var clusterNull = 99;
 /*********************************************************** CLUSTER ************************************************************************/
       function displayCluster() {
@@ -180,12 +180,8 @@
 		  svgCluster.attr({
 		          "width": widthCluster,
 		          "height": heightCluster
-		      })
-		      .call(d3.behavior.zoom().scaleExtent([1, 8]).on("zoom", zoom));
-
-          function zoom() {
-		      svgCluster.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-		  }
+		   })
+		   .call(d3.behavior.zoom().scaleExtent([1, 8]).on("zoom", zoom));
 
 		  var background = svgCluster.append("rect")
 		      .attr({
@@ -201,6 +197,10 @@
                   d3.select('#chart_words').html("");
 		          unSelectCluster();
 		      });
+
+          function zoom() {
+		      svgCluster.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+		  }
 
 		  var node = svgCluster.selectAll(".node")
 		      .data(nodes)
@@ -435,6 +435,8 @@
 
     redrawGraphStat = function(file, chart_svg, chart, cluster_color) {
 
+        width = document.getElementById("containerNorth").getElementsByClassName("right")[0].offsetWidth;
+
         d3.json("../dataset/generated/xhamster/json/histo_stat/" + file, function(json) {
 
             var data = json;
@@ -461,7 +463,7 @@
             .datum(historicalBarChart)
             .call(chart)
             .append("text")
-            .attr('x', 310)
+            .attr('x', width / 2)
             .attr('y', 30)
             .attr("text-anchor", "middle")
             .attr('class', 'chart-title')
@@ -551,6 +553,9 @@
 
     redrawGraphPopularity = function(idCluster, chart_svg, chart) {
 
+        width = document.getElementById("containerSouth").getElementsByClassName("left")[0].offsetWidth;
+        height = document.getElementById("containerSouth").getElementsByClassName("left")[0].offsetHeight;
+
         d3.json('../dataset/generated/xhamster/json/histo_popularity/cluster'+idCluster+'.json', function(data) {
           var histcatexplong =data;
           var histcatexpshort = data;
@@ -567,7 +572,7 @@
             .append("text")
             .attr("class", "y label")
             .attr("text-anchor", "middle")
-            .attr('x',-200)
+            .attr('x',- height / 2)
             .attr('y', 10)
             .style("fill", "white")
             .style("font-size", "15px")
@@ -579,7 +584,7 @@
             .append("text")
             .attr("class", "y label")
             .attr("text-anchor", "middle")
-            .attr("x", 190)
+            .attr("x", width / 2)
             .attr("y", 390)
             .style("fill", "white")
             .style("font-size", "15px")
@@ -609,7 +614,7 @@
            d3.select(chart_svg).html("");
 
             var fill = d3.scale.category20();
-            var width = 400;
+            var width = document.getElementById("containerSouth").getElementsByClassName("right")[0].offsetWidth;
             var height = 400;
 
             d3.layout.cloud().size([width, height])
@@ -625,7 +630,7 @@
            function draw(words) {
                d3.select(chart_svg)
                    .append("g").attr("width", width).attr("height", height)
-                   .attr("transform", "translate(200,200)")
+                   .attr("transform", "translate(" + width / 2 + ",200)")
                    .selectAll("text").data(words)
                    .enter().append("text")
                    .style("font-size", function (d) {
@@ -649,4 +654,3 @@
 
   </script>
 </body>
-
