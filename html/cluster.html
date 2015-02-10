@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 
-<script src="http://code.jquery.com/jquery-1.7rc2.js"></script>
 <!-- Paul / Yse -->
 <link href="../stylesheets/nv.d3.css" rel="stylesheet" type="text/css">
 
@@ -10,7 +9,6 @@
    body {
        margin: 15px 15px 15px 15px;
        background: #272727;
-       overflow-y:scroll;
    }
    #containerNorth {
         height:600px;
@@ -31,13 +29,13 @@
     }
     #containerSouth .left {
         float: left;
-        width: 100%;
-        height:400px;
+        width: 50%;
+        height: 0px;
     }
     #containerSouth .right {
         float: right;
-        width:400px;
-        height:400px;
+        width: 50%;
+        height: 0px;
     }
    /* Martin */
    .rect {
@@ -55,6 +53,7 @@
       fill: white;
     }
     #chart_popularity {
+      height : 0
       background-color: #272727
     }
     /* Pierre */
@@ -88,19 +87,11 @@
     <!-- Paul / Yse -->
     <script type="text/javascript">
         function updateTitleWord(tag) {
-            $( window ).resize(function() {
-                $('#containerSouth .left').width($(window).width()-450);
-            });
-            $(window).trigger('resize');
             var file = "Tag_words_" + tag + ".json";
             redrawGraphTitleWord(file, '#chart_words');
         }
         function removeTitleWord() {
             d3.select("#chart_words").html("");
-            $( window ).resize(function() {
-                $('#containerSouth .left').width($(window).width());
-            });
-            $(window).trigger('resize');
         }
     </script>
     <script src="../javascripts/nv.d3.js"></script>
@@ -190,10 +181,11 @@
 		          "width": widthCluster,
 		          "height": heightCluster
 		      })
-		      .on("dragstart", function() {
-		          d3.event.sourceEvent.stopPropagation(); // silence other listeners
-		      })
 		      .call(d3.behavior.zoom().scaleExtent([1, 8]).on("zoom", zoom));
+
+          function zoom() {
+		      svgCluster.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+		  }
 
 		  var background = svgCluster.append("rect")
 		      .attr({
@@ -336,6 +328,9 @@
 
               removeTitleWord();
 
+              document.getElementById("containerSouth").getElementsByClassName("left")[0].style.height = "400px";
+              document.getElementById("containerSouth").getElementsByClassName("right")[0].style.height = "400px";
+
 		      // change global opacity
 		      node.style("opacity", 0.4);
 		      idClusterSelected = d.cluster
@@ -356,6 +351,9 @@
 
 		  function unSelectCluster() {
 
+              document.getElementById("containerSouth").getElementsByClassName("left")[0].style.height = "0px";
+              document.getElementById("containerSouth").getElementsByClassName("right")[0].style.height = "0px";
+
 		      // change global opacity
 		      node.style("opacity", 1);
 
@@ -375,10 +373,6 @@
 		      }
 
               idClusterSelected = -1;
-		  }
-
-		  function zoom() {
-		      svgCluster.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
 		  }
 
 	      });
@@ -568,6 +562,29 @@
           var keyColor = function(d, i) {return colors(d.key)};
 
          d3.select(chart_svg).html("");
+          // YSE AJOUT DES LABELS SUR LES AXES - MERCI YSE (Pierre <3)
+         d3.select(chart_svg)
+            .append("text")
+            .attr("class", "y label")
+            .attr("text-anchor", "middle")
+            .attr('x',-200)
+            .attr('y', 10)
+            .style("fill", "white")
+            .style("font-size", "15px")
+                .attr("dy", ".75em")
+                .attr("transform", "rotate(-90)")
+                .text("Proportion of tags among videos");
+
+            d3.select(chart_svg)
+            .append("text")
+            .attr("class", "y label")
+            .attr("text-anchor", "middle")
+            .attr("x", 190)
+            .attr("y", 390)
+            .style("fill", "white")
+            .style("font-size", "15px")
+            .text("Popularity of tags over time");
+            // FIN DE LA MODIF YSE LABELS - MERCI ENCORE POUR CES MODIFS
          d3.select(chart_svg)
                   .datum(histcatexplong)
                   .transition().duration(1000)
