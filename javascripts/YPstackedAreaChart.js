@@ -62,7 +62,7 @@ nv.models.stackedAreaChart = function() {
         top = e.pos[1] + ( offsetElement.offsetTop || 0),
         x = xAxis.tickFormat()(stacked.x()(e.point, e.pointIndex)),
         y = yAxis.tickFormat()(stacked.y()(e.point, e.pointIndex)),
-        content = tooltip(e.series.key, x, y, e, chart);
+        content = tooltip(censorship(e.series.key), x, y, e, chart);
 
     nv.tooltip.show([left, top], content, e.value < 0 ? 'n' : 's', null, offsetElement);
   };
@@ -151,8 +151,8 @@ nv.models.stackedAreaChart = function() {
 
       if (showLegend) {
         var legendWidth = (showControls) ? availableWidth - controlWidth : availableWidth;
-        legend
-          .width(legendWidth);
+
+        legend.width(legendWidth);
 
         g.select('.nv-legendWrap')
             .datum(data)
@@ -182,12 +182,6 @@ nv.models.stackedAreaChart = function() {
             disabled: stacked.style() != 'stack',
             style: 'stack'
           },
-          /*{
-            key: controlLabels.stream || 'Stream',
-            metaKey: 'Stream',
-            disabled: stacked.style() != 'stream',
-            style: 'stream'
-          },*/
           {
             key: controlLabels.expanded || 'Expanded',
             metaKey: 'Expanded',
@@ -331,6 +325,7 @@ nv.models.stackedAreaChart = function() {
         dispatch.stateChange(state);
 
         chart.update();
+        censorshipPopularityGraph();
       });
 
       legend.dispatch.on('stateChange', function(newState) {
@@ -376,7 +371,7 @@ nv.models.stackedAreaChart = function() {
               //If we are in 'expand' mode, use the stacked percent value instead of raw value.
               var tooltipValue = (stacked.style() == 'expand') ? point.display.y : chart.y()(point,pointIndex);
               allData.push({
-                  key: series.key,
+                  key: censorship(series.key),
                   value: tooltipValue,
                   color: color(series,series.seriesIndex),
                   stackedValue: point.display
@@ -423,22 +418,6 @@ nv.models.stackedAreaChart = function() {
                         series: allData
                       }
                   )();
-                  /*
-  //If we are in 'stacked' mode, force the format to be a percentage.
-          var valueFormatter = (stacked.style() == 'stack') ?
-               function(d,i) {return d3.format(".2%")(d);} :
-               function(d,i) {return yAxis.tickFormat()(d); };
-          interactiveLayer.tooltip
-                  .position({left: pointXLocation + margin.left, top: e.mouseY + margin.top})
-                  .chartContainer(that.parentNode)
-                  .enabled(tooltips)
-                  .valueFormatter(valueFormatter)
-                  .data(
-                      {
-                        value: xValue,
-                        series: allData
-                      }
-                  )();*/
 
           interactiveLayer.renderGuideLine(pointXLocation);
 
@@ -484,14 +463,6 @@ nv.models.stackedAreaChart = function() {
   //------------------------------------------------------------
 
   stacked.dispatch.on('tooltipShow', function(e) {
-    //disable tooltips when value ~= 0
-    //// TODO: consider removing points from voronoi that have 0 value instead of this hack
-    /*
-    if (!Math.round(stacked.y()(e.point) * 100)) {  // 100 will not be good for very small numbers... will have to think about making this valu dynamic, based on data range
-      setTimeout(function() { d3.selectAll('.point.hover').classed('hover', false) }, 0);
-      return false;
-    }
-   */
 
     e.pos = [e.pos[0] + margin.left, e.pos[1] + margin.top],
     dispatch.tooltipShow(e);
