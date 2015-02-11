@@ -86,12 +86,48 @@
 
     <!-- Paul / Yse -->
     <script type="text/javascript">
+        function censorshipPopularityGraph() {
+            d3.select('#chart_popularity').selectAll('g.nv-legendWrap').selectAll('text.nv-legend-text').each(function(d) {
+                d3.select(this).text(function (d) {
+                    return censorship(d.key);
+                })
+            });
+        }
+
+        function extractUrlParams(parameter) {
+            var t = location.search.substring(2).split('&');
+            for (var i=0; i<t.length; i++) {
+                var x = t[ i ].split('=');
+                if (x[0] == parameter)
+                    return stringToBoolean(x[1]);
+            }
+        }
+
+        function stringToBoolean(val){
+            switch(val.toLowerCase()){
+                case "true": case "yes": case "1": return true;
+                case "false": case "no": case "0": case null: return false;
+                default: return Boolean(val);
+            }
+        }
+
+        var censor = extractUrlParams('censorship');
+
+        function censorship(val) {
+            if (censor) {
+                return val.replace(/[aui]/ig,'*');
+            } else {
+                return val;
+            }
+        }
         function updateTitleWord(tag) {
+            document.getElementById("containerSouth").getElementsByClassName("right")[0].style.height = "400px";
             var file = "Tag_words_" + tag + ".json";
             redrawGraphTitleWord(file, '#chart_words');
         }
         function removeTitleWord() {
             d3.select("#chart_words").html("");
+            document.getElementById("containerSouth").getElementsByClassName("right")[0].style.height = "0px";
         }
     </script>
     <script src="../javascripts/nv.d3.js"></script>
@@ -156,7 +192,7 @@
 		      var i = node.group,
 		          r = range_scale(node.degree),
 		          d = {
-		              tag: node.tags,
+		              tag: censorship(node.tags),
 		              cluster: node.group,
 		              radius: r,
 		              color: color(i),
@@ -175,9 +211,10 @@
 		      .on("tick", tick)
 		      .start();
 
-		  var svgCluster = d3.select("#cluster");
 
-		  svgCluster.attr({
+		  var svgCluster = d3.select("#cluster")
+                  .append("svg")
+                    .attr({
 		          "width": widthCluster,
 		          "height": heightCluster
 		   })
@@ -198,11 +235,11 @@
 		          unSelectCluster();
 		      });
 
-          function zoom() {
-		      svgCluster.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-		  }
+              function zoom() {
+                  svgCluster.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+              }
 
-		  var node = svgCluster.selectAll(".node")
+             var node = svgCluster.selectAll(".node")
 		      .data(nodes)
 		      .enter().append("g")
 		      .attr("class", "node")
@@ -211,7 +248,8 @@
 		      })
 		      .call(force.drag);
 
-		  node.append("circle")
+          	 node.append("circle")
+              .attr("class", "node")
 		      .attr("r", function(d) {
 		          return d.radius;
 		      })
@@ -220,12 +258,15 @@
 		      .style("stroke-opacity", 0.5)
 		      .style("fill", function(d) {
 		          return color(d.cluster);
-		      });
+		      })
+              .on("click", function(d) {
+		          onMouseClick(d);
+		      })
+              .call(force.drag);
 
-		  node.append("text")
+             node.append("text")
 		      .attr("text-anchor", "middle")
 		      .attr("font-family", "Comic Sans MS")
-		      .attr("font-size", "9px")
 		      .attr("fill", "black")
 		      .text(function(d) {
 		          return d.tag;
@@ -326,14 +367,12 @@
 
 		  function selectCluster(d) {
 
-              removeTitleWord();
-
               document.getElementById("containerSouth").getElementsByClassName("left")[0].style.height = "400px";
               document.getElementById("containerSouth").getElementsByClassName("right")[0].style.height = "400px";
 
 		      // change global opacity
 		      node.style("opacity", 0.4);
-		      idClusterSelected = d.cluster
+		      idClusterSelected = d.cluster;
 
 		      // resize cluster's node and label
 		      svgCluster.selectAll(".node").filter(function(d) {
@@ -350,6 +389,8 @@
 		  }
 
 		  function unSelectCluster() {
+
+              removeTitleWord();
 
               document.getElementById("containerSouth").getElementsByClassName("left")[0].style.height = "0px";
               document.getElementById("containerSouth").getElementsByClassName("right")[0].style.height = "0px";
@@ -376,6 +417,7 @@
 		  }
 
 	      });
+
 	}
 	displayCluster();
 
@@ -590,6 +632,7 @@
             .style("font-size", "15px")
             .text("Popularity of tags over time");
             // FIN DE LA MODIF YSE LABELS - MERCI ENCORE POUR CES MODIFS
+
          d3.select(chart_svg)
                   .datum(histcatexplong)
                   .transition().duration(1000)
@@ -603,8 +646,12 @@
                           })
                       }, 0)
                   });
+
+          censorshipPopularityGraph();
+
           nv.utils.windowResize(chart.update);
         });
+
     };
 /****************************************************** TITLE WORD CHART ********************************************************************/
 
@@ -619,7 +666,7 @@
 
             d3.layout.cloud().size([width, height])
                .words(data.map(function(d) {
-                 return {text: d.tag, size: d.size};
+                 return {text: censorship(d.tag), size: d.size};
                }))
               .rotate(function() { return ~~(Math.random() * 2) * 90; })
               .font("Impact")
@@ -628,6 +675,7 @@
               .start();
 
            function draw(words) {
+
                d3.select(chart_svg)
                    .append("g").attr("width", width).attr("height", height)
                    .attr("transform", "translate(" + width / 2 + ",200)")
@@ -647,6 +695,7 @@
                    .text(function (d) {
                        return d.text;
                    });
+
            }
 
        });
@@ -654,3 +703,4 @@
 
   </script>
 </body>
+
