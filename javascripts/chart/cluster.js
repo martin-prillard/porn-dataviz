@@ -251,6 +251,8 @@
           document.getElementById("containerSouth").getElementsByClassName("left")[0].style.height = "400px";
           document.getElementById("containerSouth").getElementsByClassName("right")[0].style.height = "400px";
 
+          updateTitleWord(clusterNull);
+
           // change global opacity
           node.style("opacity", 0.4);
           idClusterSelected = d.cluster;

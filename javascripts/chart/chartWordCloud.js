@@ -1,12 +1,12 @@
   function wordCloud(chart_svg) {
 
-        var fill = d3.scale.category20();
+         var fill = d3.scale.category20();
 
 
          function draw(words) {
 
             var width = document.getElementById("containerSouth").getElementsByClassName("right")[0].offsetWidth;
-            var height = 400;
+            var height = 370;
 
                 d3.select(chart_svg).html("");
 
@@ -37,6 +37,17 @@
                     })
                     .style("fill-opacity", 1);
 
+                     d3.select(chart_svg)
+                        .append("text")
+                        .attr("class", "y label")
+                        .attr("text-anchor", "middle")
+                        .attr("x", width / 2)
+                        .attr("y", 388)
+                        .style("fill", "white")
+                        .style("font-size", "15px")
+                        .text(" Most common words in video title");
+
+
            }
 
         //Use the module pattern to encapsulate the visualisation code. We'll
@@ -49,7 +60,7 @@
             update: function(data) {
 
                 var width = document.getElementById("containerSouth").getElementsByClassName("right")[0].offsetWidth;
-                var height = 400;
+                var height = 370;
 
                 d3.layout.cloud().size([width, height])
                         .words(data.map(function (d) {
