@@ -9,8 +9,8 @@
       var heightCluster = 600;
 
       var m = 20,
-      radius = d3.scale.sqrt().range([0, 12]),
-      color = d3.scale.category20().domain(d3.range(m));
+          radius = d3.scale.sqrt().range([0, 12]),
+          color = d3.scale.category20().domain(d3.range(m));
 
       var clusters = new Array(m);
 
@@ -20,7 +20,7 @@
 
       function getSizeText(r, text) {
           var len = text.length + 2;
-          var size = r/3;
+          var size = r / 3;
           size *= 10 / len;
           size += 1;
           return Math.round(size)
@@ -53,11 +53,11 @@
               .start();
 
           var svgCluster = d3.select("#cluster")
-                  .append("svg")
-                    .attr({
+              .append("svg")
+              .attr({
                   "width": widthCluster,
                   "height": heightCluster
-           });
+              });
 
           var background = svgCluster.append("rect")
               .attr({
@@ -82,94 +82,134 @@
                   unSelectCluster();
               });
 
-             var node = svgCluster.selectAll(".node")
+          var node = svgCluster.selectAll(".node")
               .data(nodes)
               .enter().append("g")
               .attr("class", "node");
 
-              node.append("circle")
-                  .attr("r", function(d) {return d.radius;})
-                  .style("stroke", "black")
-                  .style("stroke-width", 0.3)
-                  .style("stroke-opacity", 0.5)
-                  .style("fill", function(d) {return color(d.cluster);})
+          node.append("circle")
+              .attr("r", function(d) {
+                  return d.radius;
+              })
+              .style("stroke", "black")
+              .style("stroke-width", 0.3)
+              .style("stroke-opacity", 0.5)
+              .style("fill", function(d) {
+                  return color(d.cluster);
+              })
 
-              node.append("text")
-                  .attr("text-anchor", "middle")
-                  .attr("font-family", "Comic Sans MS")
-                  .attr("fill", "black")
-                  .text(function(d) {return d.tag;})
-                  .style("font-size", function(d) {return d.text_size + "px";})
-                  .attr("dy", ".35em");
+          node.append("text")
+              .attr("text-anchor", "middle")
+              .attr("font-family", "Comic Sans MS")
+              .attr("fill", "black")
+              .text(function(d) {
+                  return d.tag;
+              })
+              .style("font-size", function(d) {
+                  return d.text_size + "px";
+              })
+              .attr("dy", ".35em");
 
-              node.on("click", function(d) { onMouseClick(d); })
-                  .call(force.drag);
+          node.on("click", function(d) {
+                  onMouseClick(d);
+              })
+              .call(force.drag);
 
           var fisheye = d3.fisheye.circular()
-                .radius(100);
+              .radius(100);
 
-         fisheyeMode = true;
+          fisheyeMode = true;
 
-         svgCluster.on("mousemove", function() {
+          svgCluster.on("mousemove", function() {
 
-            if (fisheyeMode) {
+              if (fisheyeMode) {
 
-              fisheye.focus(d3.mouse(this));
+                  fisheye.focus(d3.mouse(this));
 
-              fisheye_effect(fisheye);
-            }
+                  fisheye_effect(fisheye);
+              }
 
-        });
+          });
 
           function tick(e) {
-               node.each(cluster(10 * e.alpha * e.alpha))
-                       .each(collide(.5));
+              node.each(cluster(10 * e.alpha * e.alpha))
+                  .each(collide(.5));
               fisheye_effect(fisheye);
           }
 
           function fisheye_effect(fisheye) {
-            if (idClusterSelected > -1) {
+              if (idClusterSelected > -1) {
                   svgCluster.selectAll(".node").filter(function(d) {
                       return d.cluster == idClusterSelected;
                   }).each(function() {
                       var n = d3.select(this);
                       n.select("circle")
-                          .each(function(e) { e.fisheye = fisheye(e);})
-                          .attr("transform", function(d) { return "translate(" + d.fisheye.x + "," + d.fisheye.y + ")";})
-                          .attr("r", function(d) { return d.fisheye.z * d.radius;});
+                          .each(function(e) {
+                              e.fisheye = fisheye(e);
+                          })
+                          .attr("transform", function(d) {
+                              return "translate(" + d.fisheye.x + "," + d.fisheye.y + ")";
+                          })
+                          .attr("r", function(d) {
+                              return d.fisheye.z * d.radius;
+                          });
                       n.select("text")
-                        .each(function(e) { e.fisheye = fisheye(e);})
-                        .attr("transform", function(d) { return "translate(" + d.fisheye.x + "," + d.fisheye.y + ")";})
-                        .style("font-size", function(d) {
-                            return d.fisheye.z * d.text_size + "px";
-                        });
+                          .each(function(e) {
+                              e.fisheye = fisheye(e);
+                          })
+                          .attr("transform", function(d) {
+                              return "translate(" + d.fisheye.x + "," + d.fisheye.y + ")";
+                          })
+                          .style("font-size", function(d) {
+                              return d.fisheye.z * d.text_size + "px";
+                          });
                   });
                   svgCluster.selectAll(".node").filter(function(d) {
                       return d.cluster != idClusterSelected;
                   }).each(function() {
                       var n = d3.select(this);
                       n.select("circle")
-                          .each(function(e) { e.fisheye = fisheye(e);})
-                          .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")";})
-                          .attr("r", function(d) { return d.radius;});
+                          .each(function(e) {
+                              e.fisheye = fisheye(e);
+                          })
+                          .attr("transform", function(d) {
+                              return "translate(" + d.x + "," + d.y + ")";
+                          })
+                          .attr("r", function(d) {
+                              return d.radius;
+                          });
                       n.select("text")
-                        .each(function(e) { e.fisheye = fisheye(e);})
-                        .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")";})
-                        .style("font-size", function(d) {
-                            return d.text_size + "px";
-                        });
+                          .each(function(e) {
+                              e.fisheye = fisheye(e);
+                          })
+                          .attr("transform", function(d) {
+                              return "translate(" + d.x + "," + d.y + ")";
+                          })
+                          .style("font-size", function(d) {
+                              return d.text_size + "px";
+                          });
                   });
-            } else {
-               node.selectAll("circle").each(function(e) { e.fisheye = fisheye(e);})
-                  .attr("transform", function(d) { return "translate(" + d.fisheye.x + "," + d.fisheye.y + ")";})
-                  .attr("r", function(d) { return d.fisheye.z * d.radius;});
+              } else {
+                  node.selectAll("circle").each(function(e) {
+                          e.fisheye = fisheye(e);
+                      })
+                      .attr("transform", function(d) {
+                          return "translate(" + d.fisheye.x + "," + d.fisheye.y + ")";
+                      })
+                      .attr("r", function(d) {
+                          return d.fisheye.z * d.radius;
+                      });
 
-               node.selectAll("text").each(function(d) { d.fisheye = fisheye(d);})
-                  .attr("transform", function(d) { return "translate(" + d.fisheye.x + "," + d.fisheye.y + ")";})
-                  .style("font-size", function(d) {
-                      return d.fisheye.z * d.text_size + "px";
-                  });
-            }
+                  node.selectAll("text").each(function(d) {
+                          d.fisheye = fisheye(d);
+                      })
+                      .attr("transform", function(d) {
+                          return "translate(" + d.fisheye.x + "," + d.fisheye.y + ")";
+                      })
+                      .style("font-size", function(d) {
+                          return d.fisheye.z * d.text_size + "px";
+                      });
+              }
           }
 
           function cluster(alpha) {
@@ -227,71 +267,71 @@
           var chartruntime = displayGenericChart(file, '#chart_runtime', colorClusterNull);
           var chartpopularity = displayPopularity(clusterNull);
 
-       onMouseClick = function(d) {
-          // is another node is selected
-          if (d.cluster != idClusterSelected) {
-              unSelectCluster();
-              selectCluster(d);
-              updateCharts(d.cluster, d.color);
+          onMouseClick = function(d) {
+              // is another node is selected
+              if (d.cluster != idClusterSelected) {
+                  unSelectCluster();
+                  selectCluster(d);
+                  updateCharts(d.cluster, d.color);
+              }
+          };
+
+          function updateCharts(idCluster, color_cluster) {
+              var file = "nb_views_" + idCluster + ".json";
+              redrawGraphStat(file, '#chart_view', chartview, color_cluster);
+              var file = "nb_comments_" + idCluster + ".json";
+              redrawGraphStat(file, '#chart_comment', chartcomment, color_cluster);
+              var file = "x_runtime_" + idCluster + ".json";
+              redrawGraphStat(file, '#chart_runtime', chartruntime, color_cluster);
+              redrawGraphPopularity(idCluster, '#chart_popularity', chartpopularity);
           }
-      };
 
-      function updateCharts(idCluster, color_cluster) {
-          var file = "nb_views_" + idCluster + ".json";
-          redrawGraphStat(file, '#chart_view', chartview, color_cluster);
-          var file = "nb_comments_" + idCluster + ".json";
-          redrawGraphStat(file, '#chart_comment', chartcomment, color_cluster);
-          var file = "x_runtime_" + idCluster + ".json";
-          redrawGraphStat(file, '#chart_runtime', chartruntime, color_cluster);
-          redrawGraphPopularity(idCluster, '#chart_popularity', chartpopularity);
-      }
+          function selectCluster(d) {
 
-      function selectCluster(d) {
+              document.getElementById("containerSouth").getElementsByClassName("left")[0].style.height = "400px";
+              document.getElementById("containerSouth").getElementsByClassName("right")[0].style.height = "400px";
 
-          document.getElementById("containerSouth").getElementsByClassName("left")[0].style.height = "400px";
-          document.getElementById("containerSouth").getElementsByClassName("right")[0].style.height = "400px";
+              updateTitleWord(clusterNull);
 
-          updateTitleWord(clusterNull);
+              // change global opacity
+              node.style("opacity", 0.4);
+              idClusterSelected = d.cluster;
 
-          // change global opacity
-          node.style("opacity", 0.4);
-          idClusterSelected = d.cluster;
-
-          // resize cluster's node and label
-          svgCluster.selectAll(".node").filter(function(d) {
-              return d.cluster == idClusterSelected;
-          }).each(function() {
-              var n = d3.select(this).transition().duration(300).style("opacity", 1);
-              n.select("circle")
-                  .style("stroke-width", 2.5)
-                  .style("stroke-opacity", 1)
-          });
-
-          onCluster = true;
-      }
-
-      function unSelectCluster() {
-
-          document.getElementById("containerSouth").getElementsByClassName("left")[0].style.height = "0px";
-          document.getElementById("containerSouth").getElementsByClassName("right")[0].style.height = "0px";
-
-          // change global opacity
-          node.style("opacity", 1);
-
-          // resize last cluster's node and label
-          if (idClusterSelected > -1) {
+              // resize cluster's node and label
               svgCluster.selectAll(".node").filter(function(d) {
                   return d.cluster == idClusterSelected;
               }).each(function() {
-                  var n = d3.select(this).transition().duration(300);
+                  var n = d3.select(this).transition().duration(300).style("opacity", 1);
                   n.select("circle")
-                      .style("stroke-width", 0.5)
-                      .style("stroke-opacity", 0.5);
+                      .style("stroke-width", 2.5)
+                      .style("stroke-opacity", 1)
               });
+
+              onCluster = true;
           }
 
-          idClusterSelected = -1;
-      }
+          function unSelectCluster() {
 
-               });
-}
+              document.getElementById("containerSouth").getElementsByClassName("left")[0].style.height = "0px";
+              document.getElementById("containerSouth").getElementsByClassName("right")[0].style.height = "0px";
+
+              // change global opacity
+              node.style("opacity", 1);
+
+              // resize last cluster's node and label
+              if (idClusterSelected > -1) {
+                  svgCluster.selectAll(".node").filter(function(d) {
+                      return d.cluster == idClusterSelected;
+                  }).each(function() {
+                      var n = d3.select(this).transition().duration(300);
+                      n.select("circle")
+                          .style("stroke-width", 0.5)
+                          .style("stroke-opacity", 0.5);
+                  });
+              }
+
+              idClusterSelected = -1;
+          }
+
+      });
+  }

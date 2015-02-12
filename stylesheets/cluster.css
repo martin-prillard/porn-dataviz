@@ -1,60 +1,70 @@
 /* Global */
 body {
-   margin: 15px 15px 15px 15px;
-   background: #292929;
+    margin: 15px 15px 15px 15px;
+    background: #292929;
 }
+
 #containerNorth {
     height:600px;
     width: 100%;
 }
+
 #containerNorth .left {
     float: left;
     width: 60%;
     height:600px;
 }
+
 #containerNorth .right {
     float: right;
     width: 40%;
     height:200px;
 }
+
 #containerSouth {
     width: 100%; // make the container span the entire window
 }
+
 #containerSouth .left {
     float: left;
     width: 60%;
     height: 0px;
 }
+
 #containerSouth .right {
     float: right;
     width: 40%;
     height: 0px;
 }
-/* Martin */
+
+/* Cluster */
 .rect {
-   background: #292929;
-   color: #ecf0f0;
+    background: #292929;
+    color: #ecf0f0;
 }
+
 .node circle {
-   fill: #ccc;
+    fill: #ccc;
 }
-/* Paul - Yse */
+
+/* popularity chart */
 .nv-x .tick line{ display: none}
 .nv-y .tick line{ opacity: 0.3}
 .nvd3 text {
-  font: 12px sans-serif;
-  fill: white;
+    font: 12px sans-serif;
+    fill: white;
 }
+
 #chart_popularity {
-  height : 0
-  background-color: #292929
+    height : 0
+    background-color: #292929
 }
-/* Pierre */
+/* stat chart */
 #containerNorth .right .nv-axis .tick line {display:none;}
 .nvd3 .nv-multibarHorizontal text {
-  font-weight: bold;
-  fill: white;
-  stroke: white;
+    font-weight: bold;
+    fill: white;
+    stroke: white;
 }
 .nvd3 .nv-multibarHorizontal .nv-groups rect {
     stroke-opacity: 0;
@@ -64,13 +74,13 @@ body {
 }
 .nvd3 .nv-discretebar .nv-groups text,
 .nvd3 .nv-multibarHorizontal .nv-groups text {
-  font-weight: bold;
-  fill: rgba(255,255,255,1);
-  stroke: rgba(0,0,0,0);
+    font-weight: bold;
+    fill: rgba(255,255,255,1);
+    stroke: rgba(0,0,0,0);
 }
 
 #chart_view svg{
-  background-color: #292929;
+    background-color: #292929;
 }
 
 #disclaimer_sexe {
@@ -133,25 +143,25 @@ body {
 }
 
 .btn {
-  background: #000000;
-  background-image: -webkit-linear-gradient(top, #e91aad, #4d083a);
-  background-image: -moz-linear-gradient(top, #e91aad, #4d083a);
-  background-image: -ms-linear-gradient(top, #e91aad, #4d083a);
-  background-image: -o-linear-gradient(top, #e91aad, #4d083a);
-  background-image: linear-gradient(to bottom, #e91aad, #4d083a);
-  -webkit-border-radius: 12;
-  -moz-border-radius: 12;
-  border-radius: 12px;
-  text-shadow: 2px 1px 1px #666666;
-  -webkit-box-shadow: 2px 3px 3px #9e929e;
-  -moz-box-shadow: 2px 3px 3px #9e929e;
-  box-shadow: 2px 3px 3px #9e929e;
-  font-family: Times New Roman;
-  color: #ffffff;
-  font-size: 12px;
-  padding: 10px 20px 10px 20px;
-  border: solid #c9b7c4 3px;
-  text-decoration: none;
+    background: #000000;
+    background-image: -webkit-linear-gradient(top, #e91aad, #4d083a);
+    background-image: -moz-linear-gradient(top, #e91aad, #4d083a);
+    background-image: -ms-linear-gradient(top, #e91aad, #4d083a);
+    background-image: -o-linear-gradient(top, #e91aad, #4d083a);
+    background-image: linear-gradient(to bottom, #e91aad, #4d083a);
+    -webkit-border-radius: 12;
+    -moz-border-radius: 12;
+    border-radius: 12px;
+    text-shadow: 2px 1px 1px #666666;
+    -webkit-box-shadow: 2px 3px 3px #9e929e;
+    -moz-box-shadow: 2px 3px 3px #9e929e;
+    box-shadow: 2px 3px 3px #9e929e;
+    font-family: Times New Roman;
+    color: #ffffff;
+    font-size: 12px;
+    padding: 10px 20px 10px 20px;
+    border: solid #c9b7c4 3px;
+    text-decoration: none;
 }
 
 .btn:hover {

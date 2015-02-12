@@ -1,137 +1,180 @@
 <!DOCTYPE html>
 <html>
-<head lang="en">
+  <head lang="en">
     <meta charset="utf-8">
-    <title>xHamster dashboard</title>
-    <!-- css -->
-    <link href="../stylesheets/nv.d3.css" rel="stylesheet" type="text/css">
-    <link href="../stylesheets/cluster.css" rel="stylesheet" type="text/css">
-    <!-- D3 -->
-    <script src='../javascripts/d3.v3.js'></script>
-    <script src='../javascripts/custom/my_fisheyes.js'></script>
-    <script src="../javascripts/nv.d3.js"></script>
-    <script src="../javascripts/utils.js"></script>
-    <script src="../javascripts/tooltip.js"></script>
-    <script src="../javascripts/interactiveLayer.js"></script>
-    <script src="../javascripts/legend.js"></script>
-    <script src="../javascripts/axis.js"></script>
-    <script src="../javascripts/scatter.js"></script>
-    <script src="../javascripts/stackedArea.js"></script>
-    <script src="../javascripts/discreteBar.js"></script>
-    <script src="../javascripts/discreteBarChart.js"></script>
-    <!-- charts -->
-    <script src="../javascripts/d3.layout.cloud.js"></script>
-    <script type="text/javascript" src="../javascripts/chart/cluster.js"></script>
-    <script type="text/javascript" src="../javascripts/chart/chartStat.js"></script>
-    <script type="text/javascript" src="../javascripts/chart/chartWordCloud.js"></script>
-    <script type="text/javascript" src="../javascripts/chart/chartPopularity.js"></script>
-    <!-- popup -->
-    <script type="text/javascript" src="../javascripts/jquery-1.11.2.min.js"></script>
-</head>
-
-<body>
-
+  <title>
+    xHamster dashboard
+  </title>
+  <!-- css -->
+  <link href="../stylesheets/nv.d3.css" rel="stylesheet" type="text/css">
+  <link href="../stylesheets/cluster.css" rel="stylesheet" type="text/css">
+  <!-- D3 -->
+  <script src='../javascripts/d3.v3.js'>
+  </script>
+  <script src='../javascripts/custom/my_fisheyes.js'>
+  </script>
+  <script src="../javascripts/nv.d3.js">
+  </script>
+  <script src="../javascripts/utils.js">
+  </script>
+  <script src="../javascripts/tooltip.js">
+  </script>
+  <script src="../javascripts/interactiveLayer.js">
+  </script>
+  <script src="../javascripts/legend.js">
+  </script>
+  <script src="../javascripts/axis.js">
+  </script>
+  <script src="../javascripts/scatter.js">
+  </script>
+  <script src="../javascripts/stackedArea.js">
+  </script>
+  <script src="../javascripts/discreteBar.js">
+  </script>
+  <script src="../javascripts/discreteBarChart.js">
+  </script>
+  <!-- charts -->
+  <script src="../javascripts/d3.layout.cloud.js">
+  </script>
+  <script type="text/javascript" src="../javascripts/chart/cluster.js">
+  </script>
+  <script type="text/javascript" src="../javascripts/chart/chartStat.js">
+  </script>
+  <script type="text/javascript" src="../javascripts/chart/chartWordCloud.js">
+  </script>
+  <script type="text/javascript" src="../javascripts/chart/chartPopularity.js">
+  </script>
+  <!-- popup -->
+  <script type="text/javascript" src="../javascripts/jquery-1.11.2.min.js">
+  </script>
+  </head>
+  
+  <body>
+    
     <script>
-          var censor = false;
+      var censor = false;
 
-          var myWordCloud;
+      var myWordCloud;
 
-          function initializeCharts(censorVal) {
-              censor = censorVal;
-              displayCluster();
-              myWordCloud = wordCloud('#chart_words');
+      function initializeCharts(censorVal) {
+          censor = censorVal;
+          displayCluster();
+          myWordCloud = wordCloud('#chart_words');
+      }
+
+      function censorshipPopularityGraph() {
+          d3.select('#chart_popularity').selectAll('g.nv-legendWrap').selectAll('text.nv-legend-text').each(function(d) {
+              d3.select(this).text(function(d) {
+                  return censorship(d.key);
+              })
+          });
+      }
+
+      function censorship(val) {
+          if (censor) {
+              return val.replace(/[aui]/ig, '*');
+          } else {
+              return val;
           }
+      }
 
-        function censorshipPopularityGraph() {
-            d3.select('#chart_popularity').selectAll('g.nv-legendWrap').selectAll('text.nv-legend-text').each(function(d) {
-                d3.select(this).text(function (d) {
-                    return censorship(d.key);
-                })
-            });
-        }
+      function updateWordCloud(tag, myWordCloud) {
+          var file = "Tag_words_" + tag + ".json";
+          d3.json("../dataset/generated/xhamster/json/words_tag/" + file, function(error, data) {
+              myWordCloud.update(data);
+          });
+      };
 
-        function censorship(val) {
-            if (censor) {
-                return val.replace(/[aui]/ig,'*');
-            } else {
-                return val;
-            }
-        }
+      function updateTitleWord(tag) {
+          updateWordCloud(tag, myWordCloud);
+      }
 
-        function updateWordCloud(tag, myWordCloud) {
-            var file = "Tag_words_" + tag + ".json";
-            d3.json("../dataset/generated/xhamster/json/words_tag/" + file, function (error, data) {
-                myWordCloud.update(data);
-            });
-        };
-
-        function updateTitleWord(tag) {
-            updateWordCloud(tag, myWordCloud);
-        }
-
-        // fade out popup
-        function fadeOut() {
-            $('#popup').delay(500).fadeOut();
-        }
-    </script>
-
-    <script src="../javascripts/custom/my_stackedAreaChart.js"></script>
-
-    <div id="containerNorth">
-        <div class="left">
-            <svg id="cluster"></svg>
-        </div>
-        <div class="right">
-            <svg id="chart_view"></svg>
-            <svg id="chart_comment"></svg>
-            <svg id="chart_runtime"></svg>
-        </div>
+      // fade out popup
+      function fadeOut() {
+          $('#popup').delay(500).fadeOut();
+      }
+  </script>
+  
+  <script src="../javascripts/custom/my_stackedAreaChart.js">
+  </script>
+  
+  <div id="containerNorth">
+    <div class="left">
+      <svg id="cluster">
+      </svg>
     </div>
-    <div id="containerSouth">
-        <div class="left">
-            <svg id="chart_popularity"></svg>
-        </div>
-        <div class="right">
-            <svg id="chart_words"></svg>
-        </div>
+    <div class="right">
+      <svg id="chart_view">
+      </svg>
+      <svg id="chart_comment">
+      </svg>
+      <svg id="chart_runtime">
+      </svg>
     </div>
-
-    <!-- popup -->
-    <div id="popup">
-            <div id="disclaimer_sexe">
-                <div id="disclaimer_sexe_inside">
-                    <p class="titre">The World's Best Porn DataViz ever !</p>
-                            <img src="../images/bed.png" alt="18" style="width:300px;height:200px">
-                    <p class="texte">
-                    If you are under the age of <b>18 years</b>, or under the age of majority in the location from where you are accessing this website you do not have authorization or permission to enter this website or access any of its materials.
-                    </p>
-
-                    <div class="box">
-                        <div class="btn" onclick="fadeOut();initializeCharts(false);">
-                            <a>Uncensored</a>
-                        </div>
-                    </div>
-                    <div class="box" style="margin-left:20px;">
-                        <div class="btn" onclick="fadeOut();initializeCharts(true);">
-                            <a>Censored</a>
-                        </div>
-                    </div>
-                    <br>
-                    <br>
-                    <br>
-                    <p class="texte" style="font-size:10px; padding:22px; text-align:justify">
-                        This website contains age-restricted materials.
-                        If you are under the age of 18 years, or under the age of majority in the location from where you are accessing this website you do not have authorization or permission to enter this website or access any of its materials.
-                        If you are over the age of 18 years or over the age of majority in the location from where you are accessing this website by entering the website you hereby agree to comply with all the TERMS AND CONDITIONS.
-                        You also acknowledge and agree that you are not offended by nudity and explicit depictions of sexual activity.
-                    </p>
-                </div>
-
-            </div>
+  </div>
+  <div id="containerSouth">
+    <div class="left">
+      <svg id="chart_popularity">
+      </svg>
     </div>
-
-</body>
-<footer>
-</footer>
+    <div class="right">
+      <svg id="chart_words">
+      </svg>
+    </div>
+  </div>
+  
+  <!-- popup -->
+  <div id="popup">
+    <div id="disclaimer_sexe">
+      <div id="disclaimer_sexe_inside">
+        <p class="titre">
+          The World's Best Porn DataViz ever !
+        </p>
+        <img src="../images/bed.png" alt="18" style="width:300px;height:200px">
+        <p class="texte">
+          If you are under the age of 
+          <b>
+            18 years
+          </b>
+          , or under the age of majority in the location from where you are accessing this website you do not have authorization or permission to enter this website or access any of its materials.
+        </p>
+        
+        <div class="box">
+          <div class="btn" onclick="initializeCharts(false);">
+            <a>
+              Uncensored
+            </a>
+          </div>
+        </div>
+        <div class="box" style="margin-left:20px;">
+          <div class="btn" onclick="initializeCharts(true);">
+            <a>
+              Censored
+            </a>
+          </div>
+        </div>
+        <br>
+        <br>
+        <br>
+        <p class="texte" style="font-size:10px; padding:22px; text-align:justify">
+          This website contains age-restricted materials.
+          If you are under the age of 18 years, or under the age of majority in the location from where you are accessing this website you do not have authorization or permission to enter this website or access any of its materials.
+          If you are over the age of 18 years or over the age of majority in the location from where you are accessing this website by entering the website you hereby agree to comply with all the TERMS AND CONDITIONS.
+          You also acknowledge and agree that you are not offended by nudity and explicit depictions of sexual activity.
+        </p>
+      </div>
+    </div>
+  </div>
+  
+  </body>
+  <footer>
+    <script>
+      $(document).ready(function() {
+        $("#popup").delay(2000).fadeIn();
+        $('#popup .btn').click(function(e) {
+          $('#popup').fadeOut();
+        });
+      });
+  </script>
+  </footer>
 </html>
-
