@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 
-<script src="http://code.jquery.com/jquery-1.7rc2.js"></script>
 <!-- Paul / Yse -->
 <link href="../stylesheets/nv.d3.css" rel="stylesheet" type="text/css">
 
@@ -9,8 +8,7 @@
    /* Global */
    body {
        margin: 15px 15px 15px 15px;
-       background: #272727;
-       overflow-y:scroll;
+       background: #292929;
    }
    #containerNorth {
         height:600px;
@@ -18,12 +16,12 @@
     }
     #containerNorth .left {
         float: left;
-        width: 50%;
+        width: 60%;
         height:600px;
     }
     #containerNorth .right {
         float: right;
-        width: 50%;
+        width: 40%;
         height:200px;
     }
     #containerSouth {
@@ -31,17 +29,17 @@
     }
     #containerSouth .left {
         float: left;
-        width: 100%;
-        height:400px;
+        width: 60%;
+        height: 0px;
     }
     #containerSouth .right {
         float: right;
-        width:400px;
-        height:400px;
+        width: 40%;
+        height: 0px;
     }
    /* Martin */
    .rect {
-       background: #272727;
+       background: #292929;
        color: #ecf0f0;
    }
    .node circle {
@@ -55,7 +53,8 @@
       fill: white;
     }
     #chart_popularity {
-      background-color: #272727
+      height : 0
+      background-color: #292929
     }
     /* Pierre */
     #containerNorth .right .nv-axis .tick line {display:none;}
@@ -77,30 +76,69 @@
       stroke: rgba(0,0,0,0);
     }
     #chart_view svg{
-      background-color: #272727;
+      background-color: #292929;
     }
 </style>
 
 <body>
     <!-- Martin -->
     <script src='../javascripts/d3.v3.js'></script>
+    <script src='../javascripts/my_fisheyes.js'></script>
 
     <!-- Paul / Yse -->
     <script type="text/javascript">
-        function updateTitleWord(tag) {
-            $( window ).resize(function() {
-                $('#containerSouth .left').width($(window).width()-450);
+
+        function censorshipPopularityGraph() {
+            d3.select('#chart_popularity').selectAll('g.nv-legendWrap').selectAll('text.nv-legend-text').each(function(d) {
+                d3.select(this).text(function (d) {
+                    return censorship(d.key);
+                })
             });
-            $(window).trigger('resize');
+        }
+
+        function extractUrlParams(parameter) {
+            var t = location.search.substring(1).split('&');
+            for (var i=0; i<t.length; i++) {
+                var x = t[ i ].split('=');
+                if (x[0] == parameter)
+                    return stringToBoolean(x[1]);
+            }
+        }
+
+        function stringToBoolean(val){
+            switch(val.toLowerCase()){
+                case "true": case "yes": case "1": return true;
+                case "false": case "no": case "0": case null: return false;
+                default: return Boolean(val);
+            }
+        }
+
+        var censor = extractUrlParams('censorship');
+
+        function censorship(val) {
+            if (censor) {
+                return val.replace(/[aui]/ig,'*');
+            } else {
+                return val;
+            }
+        }
+
+        var myWordCloud;
+
+        function updateWordCloud(tag, myWordCloud) {
             var file = "Tag_words_" + tag + ".json";
-            redrawGraphTitleWord(file, '#chart_words');
+            d3.json("../dataset/generated/xhamster/json/words_tag/" + file, function (error, data) {
+                myWordCloud.update(data);
+            });
+        };
+
+        function updateTitleWord(tag) {
+            document.getElementById("containerSouth").getElementsByClassName("right")[0].style.height = "400px";
+            updateWordCloud(tag, myWordCloud);
         }
         function removeTitleWord() {
-            d3.select("#chart_words").html("");
-            $( window ).resize(function() {
-                $('#containerSouth .left').width($(window).width());
-            });
-            $(window).trigger('resize');
+            updateWordCloud('99', myWordCloud);
+            document.getElementById("containerSouth").getElementsByClassName("right")[0].style.height = "0px";
         }
     </script>
     <script src="../javascripts/nv.d3.js"></script>
@@ -111,7 +149,7 @@
     <script src="../javascripts/axis.js"></script>
     <script src="../javascripts/scatter.js"></script>
     <script src="../javascripts/stackedArea.js"></script>
-    <script src="../javascripts/YPstackedAreaChart.js"></script>
+    <script src="../javascripts/my_stackedAreaChart.js"></script>
 
     <!-- Pierre -->
     <script src="../javascripts/discreteBar.js"></script>
@@ -142,14 +180,15 @@
 
   <script>
 /************************************************************ GLOBAL ************************************************************************/
-      var widthCluster = 600;
+      var widthCluster = document.getElementById("containerNorth").getElementsByClassName("left")[0].offsetWidth;
       var heightCluster = 600;
-      var colorBackground = "#272727";
+      var colorBackground = "#292929";
       var clusterNull = 99;
+      var colorClusterNull = "#FFFFFF";
+      var idClusterSelected = -1;
 /*********************************************************** CLUSTER ************************************************************************/
       function displayCluster() {
 	      var m = 20,
-		  padding = 30,
 		  radius = d3.scale.sqrt().range([0, 12]),
 		  color = d3.scale.category20().domain(d3.range(m));
 
@@ -161,13 +200,24 @@
 		      .domain(d3.range(46))
 		      .rangePoints([8, 25]);
 
+          function getSizeText(r, text) {
+              var len = text.length + 2;
+              var size = r/3;
+              size *= 10 / len;
+              size += 1;
+              return Math.round(size)
+          }
+
 		  var nodes = json.nodes.map(function(node) {
 		      var i = node.group,
 		          r = range_scale(node.degree),
+                  label = censorship(node.tags),
+                  ts = getSizeText(r, label),
 		          d = {
-		              tag: node.tags,
+		              tag: label,
 		              cluster: node.group,
 		              radius: r,
+                      text_size: ts,
 		              color: color(i),
 		              x: Math.cos(i / m * 2 * Math.PI) * 200 + widthCluster / 2 + Math.random(),
 		              y: Math.sin(i / m * 2 * Math.PI) * 200 + heightCluster / 2 + Math.random()
@@ -179,21 +229,17 @@
 		force = d3.layout.force()
 		      .nodes(nodes)
 		      .size([widthCluster, heightCluster])
-		      .gravity(.02)
-		      .charge(0)
+		      //.gravity(.02)
+		      //.charge(0)
 		      .on("tick", tick)
 		      .start();
 
-		  var svgCluster = d3.select("#cluster");
-
-		  svgCluster.attr({
+		  var svgCluster = d3.select("#cluster")
+                  .append("svg")
+                    .attr({
 		          "width": widthCluster,
 		          "height": heightCluster
-		      })
-		      .on("dragstart", function() {
-		          d3.event.sourceEvent.stopPropagation(); // silence other listeners
-		      })
-		      .call(d3.behavior.zoom().scaleExtent([1, 8]).on("zoom", zoom));
+		   });
 
 		  var background = svgCluster.append("rect")
 		      .attr({
@@ -202,54 +248,111 @@
 		      })
 		      .attr("fill", colorBackground)
 		      .on("click", function(d) {
+                var file = "nb_views_" + clusterNull + ".json";
+                redrawGraphStat(file, '#chart_view', chartview, colorClusterNull);
+                var file = "nb_comments_" + clusterNull + ".json";
+                redrawGraphStat(file, '#chart_comment', chartcomment, colorClusterNull);
+                var file = "x_runtime_" + clusterNull + ".json";
+                redrawGraphStat(file, '#chart_runtime', chartruntime, colorClusterNull);
                   d3.select('#chart_view').html("");
                   d3.select('#chart_comment').html("");
                   d3.select('#chart_runtime').html("");
                   d3.select('#chart_popularity').html("");
-                  d3.select('#chart_words').html("");
 		          unSelectCluster();
 		      });
 
-		  var node = svgCluster.selectAll(".node")
+             var node = svgCluster.selectAll(".node")
 		      .data(nodes)
 		      .enter().append("g")
-		      .attr("class", "node")
-		      .on("click", function(d) {
-		          onMouseClick(d);
-		      })
-		      .call(force.drag);
+              .attr("class", "node");
 
-		  node.append("circle")
-		      .attr("r", function(d) {
-		          return d.radius;
-		      })
-		      .style("stroke", "black")
-		      .style("stroke-width", 0.3)
-		      .style("stroke-opacity", 0.5)
-		      .style("fill", function(d) {
-		          return color(d.cluster);
-		      });
+              node.append("circle")
+                  .attr("r", function(d) {return d.radius;})
+                  .style("stroke", "black")
+                  .style("stroke-width", 0.3)
+                  .style("stroke-opacity", 0.5)
+                  .style("fill", function(d) {return color(d.cluster);})
 
-		  node.append("text")
-		      .attr("text-anchor", "middle")
-		      .attr("font-family", "Comic Sans MS")
-		      .attr("font-size", "9px")
-		      .attr("fill", "black")
-		      .text(function(d) {
-		          return d.tag;
-		      })
-		      .style("font-size", function(d) {
-		          return Math.min(2 * d.radius, (2 * d.radius - 8) / this.getComputedTextLength() * 10) + "px";
-		      })
-		      .attr("dy", ".35em");
+              node.append("text")
+                  .attr("text-anchor", "middle")
+                  .attr("font-family", "Comic Sans MS")
+                  .attr("fill", "black")
+                  .text(function(d) {return d.tag;})
+                  .style("font-size", function(d) {return d.text_size + "px";})
+                  .attr("dy", ".35em");
+
+              node.on("click", function(d) { onMouseClick(d); })
+                  .call(force.drag);
+
+          var fisheye = d3.fisheye.circular()
+                .radius(100);
+
+         fisheyeMode = true;
+
+         svgCluster.on("mousemove", function() {
+
+            if (fisheyeMode) {
+
+              fisheye.focus(d3.mouse(this));
+
+              fisheye_effect(fisheye);
+            }
+
+        });
 
 		  function tick(e) {
-		      node.each(cluster(10 * e.alpha * e.alpha))
-		          .each(collide(.5))
-		          .attr("transform", function(d) {
-		              return "translate(" + d.x + "," + d.y + ")";
-		          });
+               node.each(cluster(10 * e.alpha * e.alpha))
+                       .each(collide(.5));
+
+              fisheye_effect(fisheye);
 		  }
+
+          function fisheye_effect(fisheye) {
+            if (idClusterSelected > -1) {
+                  svgCluster.selectAll(".node").filter(function(d) {
+                      return d.cluster == idClusterSelected;
+                  }).each(function() {
+                      var n = d3.select(this);
+                      n.select("circle")
+                          .each(function(e) { e.fisheye = fisheye(e);})
+                          .attr("transform", function(d) { return "translate(" + d.fisheye.x + "," + d.fisheye.y + ")";})
+                          .attr("r", function(d) { return d.fisheye.z * d.radius;});
+                      n.select("text")
+                        .each(function(e) { e.fisheye = fisheye(e);})
+                        .attr("transform", function(d) { return "translate(" + d.fisheye.x + "," + d.fisheye.y + ")";})
+                        .style("font-size", function(d) {
+                            return d.fisheye.z * d.text_size + "px";
+                        });
+                  });
+                  svgCluster.selectAll(".node").filter(function(d) {
+                      return d.cluster != idClusterSelected;
+                  }).each(function() {
+                      var n = d3.select(this);
+                      n.select("circle")
+                          .each(function(e) { e.fisheye = fisheye(e);})
+                          .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")";})
+                          .attr("r", function(d) { return d.radius;});
+                      n.select("text")
+                        .each(function(e) { e.fisheye = fisheye(e);})
+                        .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")";})
+                        .style("font-size", function(d) {
+                            return d.text_size + "px";
+                        });
+                  });
+            } else {
+               node.selectAll("circle").each(function(e) { e.fisheye = fisheye(e);})
+                  .attr("transform", function(d) { return "translate(" + d.fisheye.x + "," + d.fisheye.y + ")";})
+                  .attr("r", function(d) { return d.fisheye.z * d.radius;});
+
+               node.selectAll("text").each(function(d) { d.fisheye = fisheye(d);})
+                  .attr("transform", function(d) { return "translate(" + d.fisheye.x + "," + d.fisheye.y + ")";})
+                  .style("font-size", function(d) {
+                      return d.fisheye.z * d.text_size + "px";
+                  });
+            }
+          }
+
+
 
 		  function cluster(alpha) {
 		      return function(d) {
@@ -269,6 +372,7 @@
 		      };
 		  }
 
+          padding = 33;
 		  // Resolves collisions between d and all other circles.
 		  function collide(alpha) {
 		      var quadtree = d3.geom.quadtree(nodes);
@@ -297,25 +401,20 @@
 		      };
 		  }
 
-		  var idClusterSelected = -1;
-		  var onCluster = false;
-
           // Initialize charts with null value
           //------------------------------------------------------------------------------
           var file = "nb_views_" + clusterNull + ".json";
-          var chartview = displayGenericChart(file, '#chart_view');
+          var chartview = displayGenericChart(file, '#chart_view', colorClusterNull);
           var file = "nb_comments_" + clusterNull + ".json";
-          var chartcomment = displayGenericChart(file, '#chart_comment');
+          var chartcomment = displayGenericChart(file, '#chart_comment', colorClusterNull);
           var file = "x_runtime_" + clusterNull + ".json";
-          var chartruntime = displayGenericChart(file, '#chart_runtime');
+          var chartruntime = displayGenericChart(file, '#chart_runtime', colorClusterNull);
           var chartpopularity = displayPopularity(clusterNull);
           //------------------------------------------------------------------------------
 
 		  onMouseClick = function(d) {
 		      // is another node is selected
-		      if (d.cluster == idClusterSelected) {
-		          onCluster = true;
-		      } else {
+		      if (d.cluster != idClusterSelected) {
 		          unSelectCluster();
 		          selectCluster(d);
                   updateCharts(d.cluster, d.color);
@@ -334,27 +433,30 @@
 
 		  function selectCluster(d) {
 
-              removeTitleWord();
+              document.getElementById("containerSouth").getElementsByClassName("left")[0].style.height = "400px";
+              document.getElementById("containerSouth").getElementsByClassName("right")[0].style.height = "400px";
 
 		      // change global opacity
 		      node.style("opacity", 0.4);
-		      idClusterSelected = d.cluster
+		      idClusterSelected = d.cluster;
 
 		      // resize cluster's node and label
 		      svgCluster.selectAll(".node").filter(function(d) {
 		          return d.cluster == idClusterSelected;
 		      }).each(function() {
-		          var n = d3.select(this).transition().duration(300).style("opacity", 1);
+                  var n = d3.select(this).transition().duration(300).style("opacity", 1);
 		          n.select("circle")
 		              .style("stroke-width", 2.5)
 		              .style("stroke-opacity", 1)
-		              .attr("r", function(d) {
-		                  return d.radius + 5;
-		              })
 		      });
+
+              onCluster = true;
 		  }
 
 		  function unSelectCluster() {
+
+              document.getElementById("containerSouth").getElementsByClassName("left")[0].style.height = "0px";
+              document.getElementById("containerSouth").getElementsByClassName("right")[0].style.height = "0px";
 
 		      // change global opacity
 		      node.style("opacity", 1);
@@ -367,26 +469,20 @@
 		              var n = d3.select(this).transition().duration(300);
 		              n.select("circle")
 		                  .style("stroke-width", 0.5)
-		                  .style("stroke-opacity", 0.5)
-		                  .attr("r", function(d) {
-		                      return d.radius;
-		                  });
+		                  .style("stroke-opacity", 0.5);
 		          });
 		      }
 
               idClusterSelected = -1;
 		  }
 
-		  function zoom() {
-		      svgCluster.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-		  }
-
 	      });
+
 	}
 	displayCluster();
 
 /******************************************************* GENERIC CHART **********************************************************************/
-    function displayGenericChart(file, chart_svg) {
+    function displayGenericChart(file, chart_svg, cluster_color) {
 
           var chart = nv.models.discreteBarChart()
               .x(function(d) { return d.label })
@@ -401,6 +497,13 @@
             // get info from title
             var re = /([a-z]+)_([a-z]+)/;
             var categorie = re.exec(file);
+
+           if (categorie[2] == "views") {
+                categorie[2] = "views (thousands)";
+            }
+            if (categorie[2] == "runtime") {
+                categorie[2] = "runtime (minutes)";
+            }
 
             chart.xAxis
                     .axisLabel(categorie)
@@ -436,10 +539,13 @@
                   return chart;
                 });
             });
+         chart.color([cluster_color])
          return chart;
     }
 
     redrawGraphStat = function(file, chart_svg, chart, cluster_color) {
+
+        width = document.getElementById("containerNorth").getElementsByClassName("right")[0].offsetWidth;
 
         d3.json("../dataset/generated/xhamster/json/histo_stat/" + file, function(json) {
 
@@ -461,13 +567,20 @@
           var re = /([a-z]+)_([a-z]+)/;
           var categorie = re.exec(file);
 
+         if (categorie[2] == "views") {
+            categorie[2] = "views (thousands)";
+        }
+        if (categorie[2] == "runtime") {
+            categorie[2] = "runtime (minutes)";
+        }
+
         d3.select(chart_svg).html("");
 
         d3.select(chart_svg)
             .datum(historicalBarChart)
             .call(chart)
             .append("text")
-            .attr('x', 310)
+            .attr('x', width / 2)
             .attr('y', 30)
             .attr("text-anchor", "middle")
             .attr('class', 'chart-title')
@@ -557,6 +670,9 @@
 
     redrawGraphPopularity = function(idCluster, chart_svg, chart) {
 
+        width = document.getElementById("containerSouth").getElementsByClassName("left")[0].offsetWidth;
+        height = document.getElementById("containerSouth").getElementsByClassName("left")[0].offsetHeight;
+
         d3.json('../dataset/generated/xhamster/json/histo_popularity/cluster'+idCluster+'.json', function(data) {
           var histcatexplong =data;
           var histcatexpshort = data;
@@ -568,6 +684,30 @@
           var keyColor = function(d, i) {return colors(d.key)};
 
          d3.select(chart_svg).html("");
+          // YSE AJOUT DES LABELS SUR LES AXES - MERCI YSE (Pierre <3)
+         d3.select(chart_svg)
+            .append("text")
+            .attr("class", "y label")
+            .attr("text-anchor", "middle")
+            .attr('x',- height / 2)
+            .attr('y', 10)
+            .style("fill", "white")
+            .style("font-size", "15px")
+                .attr("dy", ".75em")
+                .attr("transform", "rotate(-90)")
+                .text("Proportion of tags among videos");
+
+            d3.select(chart_svg)
+            .append("text")
+            .attr("class", "y label")
+            .attr("text-anchor", "middle")
+            .attr("x", width / 2)
+            .attr("y", 390)
+            .style("fill", "white")
+            .style("font-size", "15px")
+            .text("Popularity of tags over time");
+            // FIN DE LA MODIF YSE LABELS - MERCI ENCORE POUR CES MODIFS
+
          d3.select(chart_svg)
                   .datum(histcatexplong)
                   .transition().duration(1000)
@@ -581,55 +721,88 @@
                           })
                       }, 0)
                   });
+
+          censorshipPopularityGraph();
+
           nv.utils.windowResize(chart.update);
         });
+
     };
-/****************************************************** TITLE WORD CHART ********************************************************************/
 
-   redrawGraphTitleWord = function(tag, chart_svg) {
-       d3.json("../dataset/generated/xhamster/json/words_tag/" + tag, function(error, data) {
+          /****************************************************** TITLE WORD CHART ********************************************************************/
+          function wordCloud(chart_svg) {
 
-           d3.select(chart_svg).html("");
+                var fill = d3.scale.category20();
+                var width = document.getElementById("containerSouth").getElementsByClassName("right")[0].offsetWidth;
+                var height = 400;
 
-            var fill = d3.scale.category20();
-            var width = 400;
-            var height = 400;
+              //Construct the word cloud's SVG element
+                var svg = d3.select(chart_svg).append("svg")
+                    .attr("width", width)
+                    .attr("height", height)
+                    .append("g")
+                    .attr("transform", "translate(" + height / 2 + "," + height / 2 + ")");
 
-            d3.layout.cloud().size([width, height])
-               .words(data.map(function(d) {
-                 return {text: d.tag, size: d.size};
-               }))
-              .rotate(function() { return ~~(Math.random() * 2) * 90; })
-              .font("Impact")
-              .fontSize(function(d) { return d.size*0.3; })
-              .on("end", draw)
-              .start();
 
-           function draw(words) {
-               d3.select(chart_svg)
-                   .append("g").attr("width", width).attr("height", height)
-                   .attr("transform", "translate(200,200)")
-                   .selectAll("text").data(words)
-                   .enter().append("text")
-                   .style("font-size", function (d) {
-                       return d.size + "px";
-                   })
-                   .style("font-family", "Impact")
-                   .style("fill", function (d, i) {
-                       return fill(i);
-                   })
-                   .attr("text-anchor", "middle")
-                   .attr("transform", function (d) {
-                       return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
-                   })
-                   .text(function (d) {
-                       return d.text;
-                   });
-           }
+                 function draw(words) {
 
-       });
-   }
+                       var cloud = svg.selectAll("g text")
+                        .data(words, function(d) { return d.text; })
 
+                       //Entering words
+                        cloud.enter()
+                            .append("text")
+                            .style("font-family", "Impact")
+                            .style("fill", function(d, i) { return fill(i); })
+                            .attr("text-anchor", "middle")
+                            .attr('font-size', 1)
+                            .text(function(d) { return d.text; });
+
+                        //Entering and existing words
+                        cloud.transition()
+                                .duration(600)
+                                .style("font-size", function(d) { return d.size + "px"; })
+                                .attr("transform", function(d) {
+                                    return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                                })
+                                .style("fill-opacity", 1);
+
+                        //Exiting words
+                        cloud.exit()
+                            .transition()
+                                .duration(200)
+                                .style('fill-opacity', 1e-6)
+                                .attr('font-size', 1)
+                                .remove();
+
+                   }
+
+                //Use the module pattern to encapsulate the visualisation code. We'll
+                // expose only the parts that need to be public.
+                return {
+                    //Recompute the word cloud for a new set of words. This method will
+                    // asycnhronously call draw when the layout has been computed.
+                    //The outside world will need to call this function, so make it part
+                    // of the wordCloud return value.
+                    update: function(data) {
+                        d3.layout.cloud().size([width - 100, height - 100])
+                                .words(data.map(function (d) {
+                                    return {text: censorship(d.tag), size: d.size / 2};
+                                }))
+                                .padding(5)
+                                .rotate(function () {
+                                    return ~~(Math.random() * 2) * 90;
+                                })
+                                .font("Impact")
+                                .fontSize(function (d) {
+                                    return d.size / 2;
+                                })
+                                .on("end", draw)
+                                .start();
+                    }
+                }
+        }
+        myWordCloud = wordCloud('#chart_words');
   </script>
 </body>
 
