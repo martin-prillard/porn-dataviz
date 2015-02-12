@@ -5,7 +5,7 @@
     },
     circular: function() {
       var radius = 200,
-          distortion = 2,
+          distortion = 3,
           k0,
           k1,
           focus = [0, 0];
