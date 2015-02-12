@@ -1,4 +1,10 @@
-  function displayCluster(colorBackground, clusterNull, colorClusterNull, idClusterSelected, chartview, chartcomment, chartruntime, chartpopularity) {
+  function displayCluster() {
+
+      var colorBackground = "#292929";
+      var clusterNull = 99;
+      var colorClusterNull = "#e91aad";
+      var idClusterSelected = -1;
+
       var widthCluster = document.getElementById("containerNorth").getElementsByClassName("left")[0].offsetWidth;
       var heightCluster = 600;
 
@@ -41,12 +47,10 @@
           });
 
           force = d3.layout.force()
-          .nodes(nodes)
-          .size([widthCluster, heightCluster])
-          //.gravity(.02)
-          //.charge(0)
-          .on("tick", tick)
-          .start();
+              .nodes(nodes)
+              .size([widthCluster, heightCluster])
+              .on("tick", tick)
+              .start();
 
           var svgCluster = d3.select("#cluster")
                   .append("svg")
@@ -62,12 +66,15 @@
               })
               .attr("fill", colorBackground)
               .on("click", function(d) {
-                var file = "nb_views_" + clusterNull + ".json";
-                redrawGraphStat(file, '#chart_view', chartview, colorClusterNull);
-                var file = "nb_comments_" + clusterNull + ".json";
-                redrawGraphStat(file, '#chart_comment', chartcomment, colorClusterNull);
-                var file = "x_runtime_" + clusterNull + ".json";
-                redrawGraphStat(file, '#chart_runtime', chartruntime, colorClusterNull);
+                  var file = "nb_views_" + clusterNull + ".json";
+                  redrawGraphStat(file, '#chart_view', chartview, colorClusterNull);
+                  var file = "nb_comments_" + clusterNull + ".json";
+                  redrawGraphStat(file, '#chart_comment', chartcomment, colorClusterNull);
+                  var file = "x_runtime_" + clusterNull + ".json";
+                  redrawGraphStat(file, '#chart_runtime', chartruntime, colorClusterNull);
+
+                  updateWordCloud(clusterNull, myWordCloud);
+
                   d3.select('#chart_view').html("");
                   d3.select('#chart_comment').html("");
                   d3.select('#chart_runtime').html("");
@@ -212,7 +219,15 @@
               };
           }
 
-            onMouseClick = function(d) {
+          var file = "nb_views_" + clusterNull + ".json";
+          var chartview = displayGenericChart(file, '#chart_view', colorClusterNull);
+          var file = "nb_comments_" + clusterNull + ".json";
+          var chartcomment = displayGenericChart(file, '#chart_comment', colorClusterNull);
+          var file = "x_runtime_" + clusterNull + ".json";
+          var chartruntime = displayGenericChart(file, '#chart_runtime', colorClusterNull);
+          var chartpopularity = displayPopularity(clusterNull);
+
+       onMouseClick = function(d) {
           // is another node is selected
           if (d.cluster != idClusterSelected) {
               unSelectCluster();

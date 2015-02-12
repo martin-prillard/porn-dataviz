@@ -1,5 +1,7 @@
 function displayGenericChart(file, chart_svg, cluster_color) {
 
+    width = document.getElementById("containerNorth").getElementsByClassName("right")[0].offsetWidth;
+
       var chart = nv.models.discreteBarChart()
           .x(function(d) { return d.label })
           .y(function(d) { return d.value })
@@ -21,10 +23,7 @@ function displayGenericChart(file, chart_svg, cluster_color) {
             categorie[2] = "runtime (minutes)";
         }
 
-        chart.xAxis
-                .axisLabel(categorie)
-                .rotateLabels(-35)
-                .tickFormat(d3.format('f'));
+        chart.xAxis.tickFormat(d3.format('f'));
 
         d3.json("../dataset/generated/xhamster/json/histo_stat/" + file, function(json) {
 
@@ -44,12 +43,31 @@ function displayGenericChart(file, chart_svg, cluster_color) {
             nv.addGraph(function() {
 
               chartData = d3.select(chart_svg)
-                  .datum(historicalBarChart)
-                  .call(chart);
+                .datum(historicalBarChart)
+                .call(chart)
+                .append("text")
+                .attr('x', width / 2)
+                .attr('y', 30)
+                .attr("text-anchor", "middle")
+                .attr('class', 'chart-title')
+                .style("fill", "white")
+                .style("font-size", "15px")
+                .text(categorie[2]);
+
+              d3.select(chart_svg)
+                .append("text")
+                .attr('x', -85)
+                .attr('y', 40)
+                .attr("text-anchor", "middle")
+                .attr('class', 'chart-title')
+                .style("fill", "white")
+                .style("font-size", "15px")
+                .text("Number of videos")
+                .attr('transform', function(d,i,j) { return 'rotate(-90,0,0)' });
 
               // white text
               d3.selectAll('.nv-multiBarHorizontal text')
-                .style('fill', "white");
+                      .style('fill', "white");
 
               nv.utils.windowResize(chart.update);
               return chart;

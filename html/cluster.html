@@ -3,8 +3,10 @@
 <head lang="en">
     <meta charset="utf-8">
     <title>xHamster dashboard</title>
+    <!-- css -->
     <link href="../stylesheets/nv.d3.css" rel="stylesheet" type="text/css">
     <link href="../stylesheets/cluster.css" rel="stylesheet" type="text/css">
+    <!-- D3 -->
     <script src='../javascripts/d3.v3.js'></script>
     <script src='../javascripts/custom/my_fisheyes.js'></script>
     <script src="../javascripts/nv.d3.js"></script>
@@ -15,22 +17,66 @@
     <script src="../javascripts/axis.js"></script>
     <script src="../javascripts/scatter.js"></script>
     <script src="../javascripts/stackedArea.js"></script>
-    <!-- Graph stat -->
     <script src="../javascripts/discreteBar.js"></script>
     <script src="../javascripts/discreteBarChart.js"></script>
-    <!-- Word cloud -->
-    <script src="../javascripts/d3.layout.cloud.js"></script>
-    <!-- popup -->
-    <script type="text/javascript" src="../javascripts/jquery.cookies.2.2.0.min.js"></script>
-    <script type="text/javascript" src="../javascripts/jquery-1.11.2.min.js"></script>
     <!-- charts -->
+    <script src="../javascripts/d3.layout.cloud.js"></script>
     <script type="text/javascript" src="../javascripts/chart/cluster.js"></script>
     <script type="text/javascript" src="../javascripts/chart/chartStat.js"></script>
     <script type="text/javascript" src="../javascripts/chart/chartWordCloud.js"></script>
     <script type="text/javascript" src="../javascripts/chart/chartPopularity.js"></script>
+    <!-- popup -->
+    <script type="text/javascript" src="../javascripts/jquery-1.11.2.min.js"></script>
 </head>
 
 <body>
+
+    <script>
+          var censor = false;
+
+          var myWordCloud;
+
+          function initializeCharts(censorVal) {
+              censor = censorVal;
+              displayCluster();
+              myWordCloud = wordCloud('#chart_words');
+          }
+
+        function censorshipPopularityGraph() {
+            d3.select('#chart_popularity').selectAll('g.nv-legendWrap').selectAll('text.nv-legend-text').each(function(d) {
+                d3.select(this).text(function (d) {
+                    return censorship(d.key);
+                })
+            });
+        }
+
+        function censorship(val) {
+            if (censor) {
+                return val.replace(/[aui]/ig,'*');
+            } else {
+                return val;
+            }
+        }
+
+        function updateWordCloud(tag, myWordCloud) {
+            var file = "Tag_words_" + tag + ".json";
+            d3.json("../dataset/generated/xhamster/json/words_tag/" + file, function (error, data) {
+                myWordCloud.update(data);
+            });
+        };
+
+        function updateTitleWord(tag) {
+            updateWordCloud(tag, myWordCloud);
+        }
+
+        // fade out popup
+        function fadeOut() {
+            $('#popup').delay(500).fadeOut();
+        }
+    </script>
+
+    <script src="../javascripts/custom/my_stackedAreaChart.js"></script>
+
     <div id="containerNorth">
         <div class="left">
             <svg id="cluster"></svg>
@@ -53,7 +99,6 @@
     <!-- popup -->
     <div id="popup">
             <div id="disclaimer_sexe">
-
                 <div id="disclaimer_sexe_inside">
                     <p class="titre">The World's Best Porn DataViz ever !</p>
                             <img src="../images/bed.png" alt="18" style="width:300px;height:200px">
@@ -63,12 +108,12 @@
 
                     <div class="box">
                         <div class="btn">
-                            <a onclick="initializeCharts(false);">Uncensored</a>
+                            <a onclick="fadeOut();initializeCharts(false);">Uncensored</a>
                         </div>
                     </div>
                     <div class="box" style="margin-left:20px;">
                         <div class="btn">
-                            <a onclick="initializeCharts(true);">Censored</a>
+                            <a onclick="fadeOut();initializeCharts(true);">Censored</a>
                         </div>
                     </div>
                     <br>
@@ -85,84 +130,8 @@
             </div>
     </div>
 
-    <script type="text/javascript">
-
-          var censor = true;
-
-          function initializeCharts(censorVal) {
-              censor = censorVal;
-              var colorBackground = "#292929";
-              var clusterNull = 99;
-              var colorClusterNull = "#e91aad";
-              var idClusterSelected = -1;
-
-              var file = "nb_views_" + clusterNull + ".json";
-              var chartview = displayGenericChart(file, '#chart_view', colorClusterNull);
-              var file = "nb_comments_" + clusterNull + ".json";
-              var chartcomment = displayGenericChart(file, '#chart_comment', colorClusterNull);
-              var file = "x_runtime_" + clusterNull + ".json";
-              var chartruntime = displayGenericChart(file, '#chart_runtime', colorClusterNull);
-              var chartpopularity = displayPopularity(clusterNull);
-
-              displayCluster(colorBackground,
-                      clusterNull,
-                      colorClusterNull,
-                      idClusterSelected,
-                      chartview,
-                      chartcomment,
-                      chartruntime,
-                      chartpopularity);
-          }
-
-        function censorshipPopularityGraph() {
-            d3.select('#chart_popularity').selectAll('g.nv-legendWrap').selectAll('text.nv-legend-text').each(function(d) {
-                d3.select(this).text(function (d) {
-                    return censorship(d.key);
-                })
-            });
-        }
-
-        function censorship(val) {
-            if (censor) {
-                return val.replace(/[aui]/ig,'*');
-            } else {
-                return val;
-            }
-        }
-
-        var myWordCloud = wordCloud('#chart_words');
-
-        function updateWordCloud(tag, myWordCloud) {
-            var file = "Tag_words_" + tag + ".json";
-            d3.json("../dataset/generated/xhamster/json/words_tag/" + file, function (error, data) {
-                myWordCloud.update(data);
-            });
-        };
-
-        function updateTitleWord(tag) {
-            document.getElementById("containerSouth").getElementsByClassName("right")[0].style.height = "400px";
-            updateWordCloud(tag, myWordCloud);
-        }
-        function removeTitleWord() {
-            updateWordCloud('99', myWordCloud);
-            document.getElementById("containerSouth").getElementsByClassName("right")[0].style.height = "0px";
-        }
-    </script>
-
-    <script src="../javascripts/custom/my_stackedAreaChart.js"></script>
-
-    <script>
-        $(document).ready(function() {
-            $("#popup").delay(2000).fadeIn();
-            $('#popup .box').click(function(e) {
-                $('#popup').fadeOut();
-            });
-        });
-    </script>
-
 </body>
 <footer>
-
 </footer>
 </html>
 

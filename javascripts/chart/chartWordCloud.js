@@ -1,21 +1,23 @@
   function wordCloud(chart_svg) {
 
         var fill = d3.scale.category20();
-        var width = document.getElementById("containerSouth").getElementsByClassName("right")[0].offsetWidth;
-        var height = 400;
-
-      //Construct the word cloud's SVG element
-        var svg = d3.select(chart_svg).append("svg")
-            .attr("width", width)
-            .attr("height", height)
-            .append("g")
-            .attr("transform", "translate(" + height / 2 + "," + height / 2 + ")");
 
 
          function draw(words) {
 
+            var width = document.getElementById("containerSouth").getElementsByClassName("right")[0].offsetWidth;
+            var height = 400;
+
+                d3.select(chart_svg).html("");
+
+                var svg = d3.select(chart_svg).append("svg")
+                    .attr("width", width)
+                    .attr("height", height)
+                    .append("g")
+                    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
                var cloud = svg.selectAll("g text")
-                .data(words, function(d) { return d.text; })
+                .data(words, function(d) { return d.text; });
 
                //Entering words
                 cloud.enter()
@@ -28,20 +30,12 @@
 
                 //Entering and existing words
                 cloud.transition()
-                        .duration(600)
-                        .style("font-size", function(d) { return d.size + "px"; })
-                        .attr("transform", function(d) {
-                            return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
-                        })
-                        .style("fill-opacity", 1);
-
-                //Exiting words
-                cloud.exit()
-                    .transition()
-                        .duration(200)
-                        .style('fill-opacity', 1e-6)
-                        .attr('font-size', 1)
-                        .remove();
+                    .duration(600)
+                    .style("font-size", function(d) { return d.size + "px"; })
+                    .attr("transform", function(d) {
+                        return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                    })
+                    .style("fill-opacity", 1);
 
            }
 
@@ -53,7 +47,11 @@
             //The outside world will need to call this function, so make it part
             // of the wordCloud return value.
             update: function(data) {
-                d3.layout.cloud().size([width - 100, height - 100])
+
+                var width = document.getElementById("containerSouth").getElementsByClassName("right")[0].offsetWidth;
+                var height = 400;
+
+                d3.layout.cloud().size([width, height])
                         .words(data.map(function (d) {
                             return {text: censorship(d.tag), size: d.size / 2};
                         }))
