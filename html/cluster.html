@@ -1,808 +1,180 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
-
-<!-- Paul / Yse -->
-<link href="../stylesheets/nv.d3.css" rel="stylesheet" type="text/css">
-
-<style>
-   /* Global */
-   body {
-       margin: 15px 15px 15px 15px;
-       background: #292929;
-   }
-   #containerNorth {
-        height:600px;
-        width: 100%;
-    }
-    #containerNorth .left {
-        float: left;
-        width: 60%;
-        height:600px;
-    }
-    #containerNorth .right {
-        float: right;
-        width: 40%;
-        height:200px;
-    }
-    #containerSouth {
-        width: 100%; // make the container span the entire window
-    }
-    #containerSouth .left {
-        float: left;
-        width: 60%;
-        height: 0px;
-    }
-    #containerSouth .right {
-        float: right;
-        width: 40%;
-        height: 0px;
-    }
-   /* Martin */
-   .rect {
-       background: #292929;
-       color: #ecf0f0;
-   }
-   .node circle {
-       fill: #ccc;
-   }
-   /* Paul - Yse */
-   .nv-x .tick line{ display: none}
-   .nv-y .tick line{ opacity: 0.3}
-   .nvd3 text {
-      font: 12px sans-serif;
-      fill: white;
-    }
-    #chart_popularity {
-      height : 0
-      background-color: #292929
-    }
-    /* Pierre */
-    #containerNorth .right .nv-axis .tick line {display:none;}
-    .nvd3 .nv-multibarHorizontal text {
-      font-weight: bold;
-      fill: white;
-      stroke: white;
-    }
-    .nvd3 .nv-multibarHorizontal .nv-groups rect {
-        stroke-opacity: 0;
-        transition: fill-opacity 2000ms linear;
-        -moz-transition: fill-opacity 2000ms linear;
-        -webkit-transition: fill-opacity 2000ms linear;
-    }
-    .nvd3 .nv-discretebar .nv-groups text,
-    .nvd3 .nv-multibarHorizontal .nv-groups text {
-      font-weight: bold;
-      fill: rgba(255,255,255,1);
-      stroke: rgba(0,0,0,0);
-    }
-    #chart_view svg{
-      background-color: #292929;
-    }
-</style>
-
-<body>
-    <!-- Martin -->
-    <script src='../javascripts/d3.v3.js'></script>
-    <script src='../javascripts/my_fisheyes.js'></script>
-
-    <!-- Paul / Yse -->
-    <script type="text/javascript">
-
-        function censorshipPopularityGraph() {
-            d3.select('#chart_popularity').selectAll('g.nv-legendWrap').selectAll('text.nv-legend-text').each(function(d) {
-                d3.select(this).text(function (d) {
-                    return censorship(d.key);
-                })
-            });
-        }
-
-        function extractUrlParams(parameter) {
-            var t = location.search.substring(1).split('&');
-            for (var i=0; i<t.length; i++) {
-                var x = t[ i ].split('=');
-                if (x[0] == parameter)
-                    return stringToBoolean(x[1]);
-            }
-        }
-
-        function stringToBoolean(val){
-            switch(val.toLowerCase()){
-                case "true": case "yes": case "1": return true;
-                case "false": case "no": case "0": case null: return false;
-                default: return Boolean(val);
-            }
-        }
-
-        var censor = extractUrlParams('censorship');
-
-        function censorship(val) {
-            if (censor) {
-                return val.replace(/[aui]/ig,'*');
-            } else {
-                return val;
-            }
-        }
-
-        var myWordCloud;
-
-        function updateWordCloud(tag, myWordCloud) {
-            var file = "Tag_words_" + tag + ".json";
-            d3.json("../dataset/generated/xhamster/json/words_tag/" + file, function (error, data) {
-                myWordCloud.update(data);
-            });
-        };
-
-        function updateTitleWord(tag) {
-            document.getElementById("containerSouth").getElementsByClassName("right")[0].style.height = "400px";
-            updateWordCloud(tag, myWordCloud);
-        }
-        function removeTitleWord() {
-            updateWordCloud('99', myWordCloud);
-            document.getElementById("containerSouth").getElementsByClassName("right")[0].style.height = "0px";
-        }
-    </script>
-    <script src="../javascripts/nv.d3.js"></script>
-    <script src="../javascripts/utils.js"></script>
-    <script src="../javascripts/tooltip.js"></script>
-    <script src="../javascripts/interactiveLayer.js"></script>
-    <script src="../javascripts/legend.js"></script>
-    <script src="../javascripts/axis.js"></script>
-    <script src="../javascripts/scatter.js"></script>
-    <script src="../javascripts/stackedArea.js"></script>
-    <script src="../javascripts/my_stackedAreaChart.js"></script>
-
-    <!-- Pierre -->
-    <script src="../javascripts/discreteBar.js"></script>
-    <script src="../javascripts/discreteBarChart.js"></script>
-
-    <!-- Guillaume -->
-    <script src="../javascripts/d3.layout.cloud.js"></script>
-
-    <!-- div -->
-    <div id="containerNorth">
-        <div class="left">
-            <svg id="cluster"></svg>
-        </div>
-        <div class="right">
-            <svg id="chart_view"></svg>
-            <svg id="chart_comment"></svg>
-            <svg id="chart_runtime"></svg>
-        </div>
-    </div>
-    <div id="containerSouth">
-        <div class="left">
-            <svg id="chart_popularity"></svg>
-        </div>
-        <div class="right">
-            <svg id="chart_words"></svg>
-        </div>
-    </div>
-
-  <script>
-/************************************************************ GLOBAL ************************************************************************/
-      var widthCluster = document.getElementById("containerNorth").getElementsByClassName("left")[0].offsetWidth;
-      var heightCluster = 600;
-      var colorBackground = "#292929";
-      var clusterNull = 99;
-      var colorClusterNull = "#FFFFFF";
-      var idClusterSelected = -1;
-/*********************************************************** CLUSTER ************************************************************************/
-      function displayCluster() {
-	      var m = 20,
-		  radius = d3.scale.sqrt().range([0, 12]),
-		  color = d3.scale.category20().domain(d3.range(m));
-
-	      d3.json("../dataset/generated/xhamster/json/cluster/cluster_xhamster.json", function(json) {
-
-		  var clusters = new Array(m);
-
-		  var range_scale = d3.scale.ordinal()
-		      .domain(d3.range(46))
-		      .rangePoints([8, 25]);
-
-          function getSizeText(r, text) {
-              var len = text.length + 2;
-              var size = r/3;
-              size *= 10 / len;
-              size += 1;
-              return Math.round(size)
-          }
-
-		  var nodes = json.nodes.map(function(node) {
-		      var i = node.group,
-		          r = range_scale(node.degree),
-                  label = censorship(node.tags),
-                  ts = getSizeText(r, label),
-		          d = {
-		              tag: label,
-		              cluster: node.group,
-		              radius: r,
-                      text_size: ts,
-		              color: color(i),
-		              x: Math.cos(i / m * 2 * Math.PI) * 200 + widthCluster / 2 + Math.random(),
-		              y: Math.sin(i / m * 2 * Math.PI) * 200 + heightCluster / 2 + Math.random()
-		          };
-		      clusters[i] = d;
-		      return d;
-		  });
-
-		force = d3.layout.force()
-		      .nodes(nodes)
-		      .size([widthCluster, heightCluster])
-		      //.gravity(.02)
-		      //.charge(0)
-		      .on("tick", tick)
-		      .start();
-
-		  var svgCluster = d3.select("#cluster")
-                  .append("svg")
-                    .attr({
-		          "width": widthCluster,
-		          "height": heightCluster
-		   });
-
-		  var background = svgCluster.append("rect")
-		      .attr({
-		          "width": widthCluster,
-		          "height": heightCluster
-		      })
-		      .attr("fill", colorBackground)
-		      .on("click", function(d) {
-                var file = "nb_views_" + clusterNull + ".json";
-                redrawGraphStat(file, '#chart_view', chartview, colorClusterNull);
-                var file = "nb_comments_" + clusterNull + ".json";
-                redrawGraphStat(file, '#chart_comment', chartcomment, colorClusterNull);
-                var file = "x_runtime_" + clusterNull + ".json";
-                redrawGraphStat(file, '#chart_runtime', chartruntime, colorClusterNull);
-                  d3.select('#chart_view').html("");
-                  d3.select('#chart_comment').html("");
-                  d3.select('#chart_runtime').html("");
-                  d3.select('#chart_popularity').html("");
-		          unSelectCluster();
-		      });
-
-             var node = svgCluster.selectAll(".node")
-		      .data(nodes)
-		      .enter().append("g")
-              .attr("class", "node");
-
-              node.append("circle")
-                  .attr("r", function(d) {return d.radius;})
-                  .style("stroke", "black")
-                  .style("stroke-width", 0.3)
-                  .style("stroke-opacity", 0.5)
-                  .style("fill", function(d) {return color(d.cluster);})
-
-              node.append("text")
-                  .attr("text-anchor", "middle")
-                  .attr("font-family", "Comic Sans MS")
-                  .attr("fill", "black")
-                  .text(function(d) {return d.tag;})
-                  .style("font-size", function(d) {return d.text_size + "px";})
-                  .attr("dy", ".35em");
-
-              node.on("click", function(d) { onMouseClick(d); })
-                  .call(force.drag);
-
-          var fisheye = d3.fisheye.circular()
-                .radius(100);
-
-         fisheyeMode = true;
-
-         svgCluster.on("mousemove", function() {
-
-            if (fisheyeMode) {
-
-              fisheye.focus(d3.mouse(this));
-
-              fisheye_effect(fisheye);
-            }
-
-        });
-
-		  function tick(e) {
-               node.each(cluster(10 * e.alpha * e.alpha))
-                       .each(collide(.5));
-
-              fisheye_effect(fisheye);
-		  }
-
-          function fisheye_effect(fisheye) {
-            if (idClusterSelected > -1) {
-                  svgCluster.selectAll(".node").filter(function(d) {
-                      return d.cluster == idClusterSelected;
-                  }).each(function() {
-                      var n = d3.select(this);
-                      n.select("circle")
-                          .each(function(e) { e.fisheye = fisheye(e);})
-                          .attr("transform", function(d) { return "translate(" + d.fisheye.x + "," + d.fisheye.y + ")";})
-                          .attr("r", function(d) { return d.fisheye.z * d.radius;});
-                      n.select("text")
-                        .each(function(e) { e.fisheye = fisheye(e);})
-                        .attr("transform", function(d) { return "translate(" + d.fisheye.x + "," + d.fisheye.y + ")";})
-                        .style("font-size", function(d) {
-                            return d.fisheye.z * d.text_size + "px";
-                        });
-                  });
-                  svgCluster.selectAll(".node").filter(function(d) {
-                      return d.cluster != idClusterSelected;
-                  }).each(function() {
-                      var n = d3.select(this);
-                      n.select("circle")
-                          .each(function(e) { e.fisheye = fisheye(e);})
-                          .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")";})
-                          .attr("r", function(d) { return d.radius;});
-                      n.select("text")
-                        .each(function(e) { e.fisheye = fisheye(e);})
-                        .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")";})
-                        .style("font-size", function(d) {
-                            return d.text_size + "px";
-                        });
-                  });
-            } else {
-               node.selectAll("circle").each(function(e) { e.fisheye = fisheye(e);})
-                  .attr("transform", function(d) { return "translate(" + d.fisheye.x + "," + d.fisheye.y + ")";})
-                  .attr("r", function(d) { return d.fisheye.z * d.radius;});
-
-               node.selectAll("text").each(function(d) { d.fisheye = fisheye(d);})
-                  .attr("transform", function(d) { return "translate(" + d.fisheye.x + "," + d.fisheye.y + ")";})
-                  .style("font-size", function(d) {
-                      return d.fisheye.z * d.text_size + "px";
-                  });
-            }
-          }
-
-
-
-		  function cluster(alpha) {
-		      return function(d) {
-		          var cluster = clusters[d.cluster];
-		          if (cluster === d) return;
-		          var x = d.x - cluster.x,
-		              y = d.y - cluster.y,
-		              l = Math.sqrt(x * x + y * y),
-		              r = d.radius + cluster.radius;
-		          if (l != r) {
-		              l = (l - r) / l * alpha;
-		              d.x -= x *= l;
-		              d.y -= y *= l;
-		              cluster.x += x;
-		              cluster.y += y;
-		          }
-		      };
-		  }
-
-          padding = 33;
-		  // Resolves collisions between d and all other circles.
-		  function collide(alpha) {
-		      var quadtree = d3.geom.quadtree(nodes);
-		      return function(d) {
-		          var r = d.radius + radius.domain()[1] + padding,
-		              nx1 = d.x - r,
-		              nx2 = d.x + r,
-		              ny1 = d.y - r,
-		              ny2 = d.y + r;
-		          quadtree.visit(function(quad, x1, y1, x2, y2) {
-		              if (quad.point && (quad.point !== d)) {
-		                  var x = d.x - quad.point.x,
-		                      y = d.y - quad.point.y,
-		                      l = Math.sqrt(x * x + y * y),
-		                      r = d.radius + quad.point.radius + (d.color !== quad.point.color) * padding;
-		                  if (l < r) {
-		                      l = (l - r) / l * alpha;
-		                      d.x -= x *= l;
-		                      d.y -= y *= l;
-		                      quad.point.x += x;
-		                      quad.point.y += y;
-		                  }
-		              }
-		              return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
-		          });
-		      };
-		  }
-
-          // Initialize charts with null value
-          //------------------------------------------------------------------------------
-          var file = "nb_views_" + clusterNull + ".json";
-          var chartview = displayGenericChart(file, '#chart_view', colorClusterNull);
-          var file = "nb_comments_" + clusterNull + ".json";
-          var chartcomment = displayGenericChart(file, '#chart_comment', colorClusterNull);
-          var file = "x_runtime_" + clusterNull + ".json";
-          var chartruntime = displayGenericChart(file, '#chart_runtime', colorClusterNull);
-          var chartpopularity = displayPopularity(clusterNull);
-          //------------------------------------------------------------------------------
-
-		  onMouseClick = function(d) {
-		      // is another node is selected
-		      if (d.cluster != idClusterSelected) {
-		          unSelectCluster();
-		          selectCluster(d);
-                  updateCharts(d.cluster, d.color);
-		      }
-		  };
-
-          function updateCharts(idCluster, color_cluster) {
-              var file = "nb_views_" + idCluster + ".json";
-              redrawGraphStat(file, '#chart_view', chartview, color_cluster);
-              var file = "nb_comments_" + idCluster + ".json";
-              redrawGraphStat(file, '#chart_comment', chartcomment, color_cluster);
-              var file = "x_runtime_" + idCluster + ".json";
-              redrawGraphStat(file, '#chart_runtime', chartruntime, color_cluster);
-              redrawGraphPopularity(idCluster, '#chart_popularity', chartpopularity);
-          }
-
-		  function selectCluster(d) {
-
-              document.getElementById("containerSouth").getElementsByClassName("left")[0].style.height = "400px";
-              document.getElementById("containerSouth").getElementsByClassName("right")[0].style.height = "400px";
-
-		      // change global opacity
-		      node.style("opacity", 0.4);
-		      idClusterSelected = d.cluster;
-
-		      // resize cluster's node and label
-		      svgCluster.selectAll(".node").filter(function(d) {
-		          return d.cluster == idClusterSelected;
-		      }).each(function() {
-                  var n = d3.select(this).transition().duration(300).style("opacity", 1);
-		          n.select("circle")
-		              .style("stroke-width", 2.5)
-		              .style("stroke-opacity", 1)
-		      });
-
-              onCluster = true;
-		  }
-
-		  function unSelectCluster() {
-
-              document.getElementById("containerSouth").getElementsByClassName("left")[0].style.height = "0px";
-              document.getElementById("containerSouth").getElementsByClassName("right")[0].style.height = "0px";
-
-		      // change global opacity
-		      node.style("opacity", 1);
-
-		      // resize last cluster's node and label
-		      if (idClusterSelected > -1) {
-		          svgCluster.selectAll(".node").filter(function(d) {
-		              return d.cluster == idClusterSelected;
-		          }).each(function() {
-		              var n = d3.select(this).transition().duration(300);
-		              n.select("circle")
-		                  .style("stroke-width", 0.5)
-		                  .style("stroke-opacity", 0.5);
-		          });
-		      }
-
-              idClusterSelected = -1;
-		  }
-
-	      });
-
-	}
-	displayCluster();
-
-/******************************************************* GENERIC CHART **********************************************************************/
-    function displayGenericChart(file, chart_svg, cluster_color) {
-
-          var chart = nv.models.discreteBarChart()
-              .x(function(d) { return d.label })
-              .y(function(d) { return d.value })
-              .staggerLabels(true)
-              .tooltips(false)
-              .showValues(true)
-              .showYAxis(false)
-              .noData("");
-
-            // add axis names
-            // get info from title
-            var re = /([a-z]+)_([a-z]+)/;
-            var categorie = re.exec(file);
-
-           if (categorie[2] == "views") {
-                categorie[2] = "views (thousands)";
-            }
-            if (categorie[2] == "runtime") {
-                categorie[2] = "runtime (minutes)";
-            }
-
-            chart.xAxis
-                    .axisLabel(categorie)
-                    .rotateLabels(-35)
-                    .tickFormat(d3.format('f'));
-
-            d3.json("../dataset/generated/xhamster/json/histo_stat/" + file, function(json) {
-
-                var data = json;
-
-                historicalBarChart = new d3.range(0,1).map(function(d,i) { return {
-                  key: 'Stream' + i,
-                  values: data.map( function(f,j) {
-                    return {
-                             "value": f.y,
-                             "label": f.x
-                           }
-                        })
-                    };
-                });
-
-                nv.addGraph(function() {
-
-                  chartData = d3.select(chart_svg)
-                      .datum(historicalBarChart)
-                      .call(chart);
-
-                  // white text
-                  d3.selectAll('.nv-multiBarHorizontal text')
-                    .style('fill', "white");
-
-                  nv.utils.windowResize(chart.update);
-                  return chart;
-                });
-            });
-         chart.color([cluster_color])
-         return chart;
-    }
-
-    redrawGraphStat = function(file, chart_svg, chart, cluster_color) {
-
-        width = document.getElementById("containerNorth").getElementsByClassName("right")[0].offsetWidth;
-
-        d3.json("../dataset/generated/xhamster/json/histo_stat/" + file, function(json) {
-
-            var data = json;
-
-            historicalBarChart = new d3.range(0,1).map(function(d,i) { return {
-              key: 'Stream' + i,
-              values: data.map( function(f,j) {
-                return {
-                         "value": f.y,
-                         "label": f.x
-                       }
-                    })
-                };
-            });
-
-          chart.color([cluster_color])
-
-          var re = /([a-z]+)_([a-z]+)/;
-          var categorie = re.exec(file);
-
-         if (categorie[2] == "views") {
-            categorie[2] = "views (thousands)";
-        }
-        if (categorie[2] == "runtime") {
-            categorie[2] = "runtime (minutes)";
-        }
-
-        d3.select(chart_svg).html("");
-
-        d3.select(chart_svg)
-            .datum(historicalBarChart)
-            .call(chart)
-            .append("text")
-            .attr('x', width / 2)
-            .attr('y', 30)
-            .attr("text-anchor", "middle")
-            .attr('class', 'chart-title')
-            .style("fill", "white")
-            .style("font-size", "15px")
-            .text(categorie[2]);
-
-          d3.select(chart_svg)
-            .append("text")
-            .attr('x', -85)
-            .attr('y', 40)
-            .attr("text-anchor", "middle")
-            .attr('class', 'chart-title')
-            .style("fill", "white")
-            .style("font-size", "15px")
-            .text("Number of videos")
-            .attr('transform', function(d,i,j) { return 'rotate(-90,0,0)' });
-
-          // white text
-          d3.selectAll('.nv-multiBarHorizontal text')
-                  .style('fill', "white");
-          nv.utils.windowResize(chart.update);
-      });
-    };
-/********************************************************* VIEW CHART ***********************************************************************/
-	function displayView(idCluster, chart) {
-        var file = "nb_views_" + idCluster + ".json";
-        redrawGraph(file, '#chart_view', chart);
-	}
-/******************************************************** COMMENT CHART *********************************************************************/
-	function displayComment(idCluster, chart) {
-        var file = "nb_comments_" + idCluster + ".json";
-        redrawGraph(file, '#chart_comment', chart);
-	}
-/******************************************************* DURATION CHART *********************************************************************/
-	function displayDuration(idCluster, chart) {
-        var file = "x_runtime_" + idCluster + ".json";
-        redrawGraph(file, '#chart_runtime', chart);
-	}
-/****************************************************** POPULARITY CHART ********************************************************************/
-    function displayPopularity(idCluster) {
-
-        //an example of harmonizing colors between visualizations
-        //observe that Consumer Discretionary and Consumer Staples have
-        //been flipped in the second chart
-        var colors = d3.scale.category20();
-        keyColor = function(d, i) {return colors(d.key)};
-
-        var chart = nv.models.stackedAreaChart()
-                   .xScale(d3.time.scale())
-                   .useInteractiveGuideline(true)
-                   .x(function(d) { return d[0] })
-                   .y(function(d) { return d[1] })
-                   .color(keyColor)
-                   .transitionDuration(300)
-                   .noData("");
-
-        chart.xAxis.tickFormat(function(d) { return d3.time.format('%Y')(new Date(d)) }).ticks(d3.time.years);
-
-        chart.yAxis.tickFormat(d3.format('%'));
-
-        d3.json('../dataset/generated/xhamster/json/histo_popularity/cluster'+idCluster+'.json', function(data) {
-            var histcatexplong =data;
-            var histcatexpshort = data;
-
-            nv.addGraph(function() {
-
-              d3.select('#chart_popularity')
-                .datum(histcatexplong)
-                .transition().duration(1000)
-                .call(chart)
-                .transition().duration(0)
-                .each('start', function() {
-                    setTimeout(function() {
-                        d3.selectAll('#chart_popularity *').each(function() {
-                          if(this.__transition__)
-                            this.__transition__.duration = 1;
-                        })
-                      }, 0)
-                  });
-              nv.utils.windowResize(chart.update);
-              return chart;
-            });
-        });
-        return chart;
-	}
-
-    redrawGraphPopularity = function(idCluster, chart_svg, chart) {
-
-        width = document.getElementById("containerSouth").getElementsByClassName("left")[0].offsetWidth;
-        height = document.getElementById("containerSouth").getElementsByClassName("left")[0].offsetHeight;
-
-        d3.json('../dataset/generated/xhamster/json/histo_popularity/cluster'+idCluster+'.json', function(data) {
-          var histcatexplong =data;
-          var histcatexpshort = data;
-
-          //an example of harmonizing colors between visualizations
-          //observe that Consumer Discretionary and Consumer Staples have
-          //been flipped in the second chart
-          var colors = d3.scale.category20();
-          var keyColor = function(d, i) {return colors(d.key)};
-
-         d3.select(chart_svg).html("");
-          // YSE AJOUT DES LABELS SUR LES AXES - MERCI YSE (Pierre <3)
-         d3.select(chart_svg)
-            .append("text")
-            .attr("class", "y label")
-            .attr("text-anchor", "middle")
-            .attr('x',- height / 2)
-            .attr('y', 10)
-            .style("fill", "white")
-            .style("font-size", "15px")
-                .attr("dy", ".75em")
-                .attr("transform", "rotate(-90)")
-                .text("Proportion of tags among videos");
-
-            d3.select(chart_svg)
-            .append("text")
-            .attr("class", "y label")
-            .attr("text-anchor", "middle")
-            .attr("x", width / 2)
-            .attr("y", 390)
-            .style("fill", "white")
-            .style("font-size", "15px")
-            .text("Popularity of tags over time");
-            // FIN DE LA MODIF YSE LABELS - MERCI ENCORE POUR CES MODIFS
-
-         d3.select(chart_svg)
-                  .datum(histcatexplong)
-                  .transition().duration(1000)
-                  .call(chart)
-                  .transition().duration(0)
-                  .each('start', function () {
-                      setTimeout(function () {
-                          d3.selectAll('#chart_popularity *').each(function () {
-                              if (this.__transition__)
-                                  this.__transition__.duration = 1;
-                          })
-                      }, 0)
-                  });
-
-          censorshipPopularityGraph();
-
-          nv.utils.windowResize(chart.update);
-        });
-
-    };
-
-          /****************************************************** TITLE WORD CHART ********************************************************************/
-          function wordCloud(chart_svg) {
-
-                var fill = d3.scale.category20();
-                var width = document.getElementById("containerSouth").getElementsByClassName("right")[0].offsetWidth;
-                var height = 400;
-
-              //Construct the word cloud's SVG element
-                var svg = d3.select(chart_svg).append("svg")
-                    .attr("width", width)
-                    .attr("height", height)
-                    .append("g")
-                    .attr("transform", "translate(" + height / 2 + "," + height / 2 + ")");
-
-
-                 function draw(words) {
-
-                       var cloud = svg.selectAll("g text")
-                        .data(words, function(d) { return d.text; })
-
-                       //Entering words
-                        cloud.enter()
-                            .append("text")
-                            .style("font-family", "Impact")
-                            .style("fill", function(d, i) { return fill(i); })
-                            .attr("text-anchor", "middle")
-                            .attr('font-size', 1)
-                            .text(function(d) { return d.text; });
-
-                        //Entering and existing words
-                        cloud.transition()
-                                .duration(600)
-                                .style("font-size", function(d) { return d.size + "px"; })
-                                .attr("transform", function(d) {
-                                    return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
-                                })
-                                .style("fill-opacity", 1);
-
-                        //Exiting words
-                        cloud.exit()
-                            .transition()
-                                .duration(200)
-                                .style('fill-opacity', 1e-6)
-                                .attr('font-size', 1)
-                                .remove();
-
-                   }
-
-                //Use the module pattern to encapsulate the visualisation code. We'll
-                // expose only the parts that need to be public.
-                return {
-                    //Recompute the word cloud for a new set of words. This method will
-                    // asycnhronously call draw when the layout has been computed.
-                    //The outside world will need to call this function, so make it part
-                    // of the wordCloud return value.
-                    update: function(data) {
-                        d3.layout.cloud().size([width - 100, height - 100])
-                                .words(data.map(function (d) {
-                                    return {text: censorship(d.tag), size: d.size / 2};
-                                }))
-                                .padding(5)
-                                .rotate(function () {
-                                    return ~~(Math.random() * 2) * 90;
-                                })
-                                .font("Impact")
-                                .fontSize(function (d) {
-                                    return d.size / 2;
-                                })
-                                .on("end", draw)
-                                .start();
-                    }
-                }
-        }
-        myWordCloud = wordCloud('#chart_words');
+<html>
+  <head lang="en">
+    <meta charset="utf-8">
+  <title>
+    xHamster dashboard
+  </title>
+  <!-- css -->
+  <link href="../stylesheets/nv.d3.css" rel="stylesheet" type="text/css">
+  <link href="../stylesheets/cluster.css" rel="stylesheet" type="text/css">
+  <!-- D3 -->
+  <script src='../javascripts/d3.v3.js'>
   </script>
-</body>
+  <script src='../javascripts/custom/my_fisheyes.js'>
+  </script>
+  <script src="../javascripts/nv.d3.js">
+  </script>
+  <script src="../javascripts/utils.js">
+  </script>
+  <script src="../javascripts/tooltip.js">
+  </script>
+  <script src="../javascripts/interactiveLayer.js">
+  </script>
+  <script src="../javascripts/legend.js">
+  </script>
+  <script src="../javascripts/axis.js">
+  </script>
+  <script src="../javascripts/scatter.js">
+  </script>
+  <script src="../javascripts/stackedArea.js">
+  </script>
+  <script src="../javascripts/discreteBar.js">
+  </script>
+  <script src="../javascripts/discreteBarChart.js">
+  </script>
+  <!-- charts -->
+  <script src="../javascripts/d3.layout.cloud.js">
+  </script>
+  <script type="text/javascript" src="../javascripts/chart/cluster.js">
+  </script>
+  <script type="text/javascript" src="../javascripts/chart/chartStat.js">
+  </script>
+  <script type="text/javascript" src="../javascripts/chart/chartWordCloud.js">
+  </script>
+  <script type="text/javascript" src="../javascripts/chart/chartPopularity.js">
+  </script>
+  <!-- popup -->
+  <script type="text/javascript" src="../javascripts/jquery-1.11.2.min.js">
+  </script>
+  </head>
+  
+  <body>
+    
+    <script>
+      var censor = false;
 
+      var myWordCloud;
+
+      function initializeCharts(censorVal) {
+          censor = censorVal;
+          displayCluster();
+          myWordCloud = wordCloud('#chart_words');
+      }
+
+      function censorshipPopularityGraph() {
+          d3.select('#chart_popularity').selectAll('g.nv-legendWrap').selectAll('text.nv-legend-text').each(function(d) {
+              d3.select(this).text(function(d) {
+                  return censorship(d.key);
+              })
+          });
+      }
+
+      function censorship(val) {
+          if (censor) {
+              return val.replace(/[aui]/ig, '*');
+          } else {
+              return val;
+          }
+      }
+
+      function updateWordCloud(tag, myWordCloud) {
+          var file = "Tag_words_" + tag + ".json";
+          d3.json("../dataset/generated/xhamster/json/words_tag/" + file, function(error, data) {
+              myWordCloud.update(data);
+          });
+      };
+
+      function updateTitleWord(tag) {
+          updateWordCloud(tag, myWordCloud);
+      }
+
+      // fade out popup
+      function fadeOut() {
+          $('#popup').delay(500).fadeOut();
+      }
+  </script>
+  
+  <script src="../javascripts/custom/my_stackedAreaChart.js">
+  </script>
+  
+  <div id="containerNorth">
+    <div class="left">
+      <svg id="cluster">
+      </svg>
+    </div>
+    <div class="right">
+      <svg id="chart_view">
+      </svg>
+      <svg id="chart_comment">
+      </svg>
+      <svg id="chart_runtime">
+      </svg>
+    </div>
+  </div>
+  <div id="containerSouth">
+    <div class="left">
+      <svg id="chart_popularity">
+      </svg>
+    </div>
+    <div class="right">
+      <svg id="chart_words">
+      </svg>
+    </div>
+  </div>
+  
+  <!-- popup -->
+  <div id="popup">
+    <div id="disclaimer_sexe">
+      <div id="disclaimer_sexe_inside">
+        <p class="titre">
+          The World's Best Porn DataViz ever !
+        </p>
+        <img src="../images/bed.png" alt="18" style="width:300px;height:200px">
+        <p class="texte">
+          If you are under the age of 
+          <b>
+            18 years
+          </b>
+          , or under the age of majority in the location from where you are accessing this website you do not have authorization or permission to enter this website or access any of its materials.
+        </p>
+        
+        <div class="box">
+          <div class="btn" onclick="initializeCharts(false);">
+            <a>
+              Uncensored
+            </a>
+          </div>
+        </div>
+        <div class="box" style="margin-left:20px;">
+          <div class="btn" onclick="initializeCharts(true);">
+            <a>
+              Censored
+            </a>
+          </div>
+        </div>
+        <br>
+        <br>
+        <br>
+        <p class="texte" style="font-size:10px; padding:22px; text-align:justify">
+          This website contains age-restricted materials.
+          If you are under the age of 18 years, or under the age of majority in the location from where you are accessing this website you do not have authorization or permission to enter this website or access any of its materials.
+          If you are over the age of 18 years or over the age of majority in the location from where you are accessing this website by entering the website you hereby agree to comply with all the TERMS AND CONDITIONS.
+          You also acknowledge and agree that you are not offended by nudity and explicit depictions of sexual activity.
+        </p>
+      </div>
+    </div>
+  </div>
+  
+  </body>
+  <footer>
+    <script>
+      $(document).ready(function() {
+        $("#popup").delay(2000).fadeIn();
+        $('#popup .btn').click(function(e) {
+          $('#popup').fadeOut();
+        });
+      });
+  </script>
+  </footer>
+</html>

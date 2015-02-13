@@ -316,8 +316,6 @@ nv.models.stackedAreaChart = function() {
 
         if (display) {
           updateTitleWord(tags[idTag])
-        } else {
-            removeTitleWord()
         }
 
         state.disabled = data.map(function(d) { return !!d.disabled });

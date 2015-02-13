@@ -1,0 +1,175 @@
+/* Global */
+body {
+    margin: 15px 15px 15px 15px;
+    background: #292929;
+}
+
+#containerNorth {
+    height:600px;
+    width: 100%;
+}
+
+#containerNorth .left {
+    float: left;
+    width: 60%;
+    height:600px;
+}
+
+#containerNorth .right {
+    float: right;
+    width: 40%;
+    height:200px;
+}
+
+#containerSouth {
+    width: 100%; // make the container span the entire window
+}
+
+#containerSouth .left {
+    float: left;
+    width: 60%;
+    height: 0px;
+}
+
+#containerSouth .right {
+    float: right;
+    width: 40%;
+    height: 0px;
+}
+
+/* Cluster */
+.rect {
+    background: #292929;
+    color: #ecf0f0;
+}
+
+.node circle {
+    fill: #ccc;
+}
+
+/* popularity chart */
+.nv-x .tick line{ display: none}
+.nv-y .tick line{ opacity: 0.3}
+.nvd3 text {
+    font: 12px sans-serif;
+    fill: white;
+}
+
+#chart_popularity {
+    height : 0
+    background-color: #292929
+}
+/* stat chart */
+#containerNorth .right .nv-axis .tick line {display:none;}
+.nvd3 .nv-multibarHorizontal text {
+    font-weight: bold;
+    fill: white;
+    stroke: white;
+}
+.nvd3 .nv-multibarHorizontal .nv-groups rect {
+    stroke-opacity: 0;
+    transition: fill-opacity 2000ms linear;
+    -moz-transition: fill-opacity 2000ms linear;
+    -webkit-transition: fill-opacity 2000ms linear;
+}
+.nvd3 .nv-discretebar .nv-groups text,
+.nvd3 .nv-multibarHorizontal .nv-groups text {
+    font-weight: bold;
+    fill: rgba(255,255,255,1);
+    stroke: rgba(0,0,0,0);
+}
+
+#chart_view svg{
+    background-color: #292929;
+}
+
+#disclaimer_sexe {
+    z-index: 10000;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    height: 100%;
+    width: 100%;
+    background-color: #04141E;
+    filter: alpha(Opacity=90);
+    -moz-opacity: 0.9;
+    color: #FFFFFF;
+}
+
+#disclaimer_sexe_inside {
+    width: 600px;
+    left: 50%;
+    margin-left: -300px;
+    top: 50px;
+    background-color: #000000;
+    position: absolute;
+    z-index: 200;
+    border: 4px solid #e91aad;
+    border-radius: 12px;
+    text-align: center;
+}
+
+#disclaimer_sexe_inside .titre {
+    font-family: Georgia, "Times New Roman", Times, serif;
+    font-size: 25px;
+    font-weight: bold;
+    color: #e91bae;
+    margin-top: 40px;
+    text-decoration: none;
+}
+
+.box {
+    height: 40x;
+    width: 100px;
+    border: 0px solid #e91bae;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-weight: bold;
+    color: #FFFFFF;
+    padding: 4px;
+    margin-top: 12px;
+    cursor: pointer;
+    float: left;
+    margin-left: 190px;
+    display: inline;
+}
+
+#disclaimer_sexe_inside .texte {
+    font-family: Georgia, "Times New Roman", Times, serif;
+    font-size: 13px;
+    font-weight: normal;
+    color: #ffffff;
+    padding: 10px 50px 10px 50px;
+    line-height: 1.5em;
+}
+
+.btn {
+    background: #000000;
+    background-image: -webkit-linear-gradient(top, #e91aad, #4d083a);
+    background-image: -moz-linear-gradient(top, #e91aad, #4d083a);
+    background-image: -ms-linear-gradient(top, #e91aad, #4d083a);
+    background-image: -o-linear-gradient(top, #e91aad, #4d083a);
+    background-image: linear-gradient(to bottom, #e91aad, #4d083a);
+    -webkit-border-radius: 12;
+    -moz-border-radius: 12;
+    border-radius: 12px;
+    text-shadow: 2px 1px 1px #666666;
+    -webkit-box-shadow: 2px 3px 3px #9e929e;
+    -moz-box-shadow: 2px 3px 3px #9e929e;
+    box-shadow: 2px 3px 3px #9e929e;
+    font-family: Times New Roman;
+    color: #ffffff;
+    font-size: 12px;
+    padding: 10px 20px 10px 20px;
+    border: solid #c9b7c4 3px;
+    text-decoration: none;
+}
+
+.btn:hover {
+    background: #000000;
+    background-image: -webkit-linear-gradient(top, #eb4dbe, #5e124a);
+    background-image: -moz-linear-gradient(top, #eb4dbe, #5e124a);
+    background-image: -ms-linear-gradient(top, #eb4dbe, #5e124a);
+    background-image: -o-linear-gradient(top, #eb4dbe, #5e124a);
+    background-image: linear-gradient(to bottom, #eb4dbe, #5e124a);
+    text-decoration: none;
+}
